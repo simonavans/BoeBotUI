@@ -1,41 +1,54 @@
 package Application;
 
 import javafx.application.Application;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class MainView extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        int resolutionPX = 1000;
+        int resolutionPY = 720;
 
-        MenuBar menuBar = new MenuBar();
+        primaryStage.setTitle("BoeBot GUI");
+        primaryStage.setWidth(resolutionPX);
+        primaryStage.setHeight(resolutionPY);
 
-        MenuItem menuAddObject = new MenuItem("Add Object");
-        MenuItem menuListObjects = new MenuItem("List Objects");
-        MenuItem menuManualRoute = new MenuItem("Manual Route");
-        Menu routeEditor = new Menu("Route Editor");
-        menuBar.getMenus().add(routeEditor);
-        routeEditor.getItems().addAll(menuAddObject, menuListObjects, menuManualRoute);
+        menuBarView menuBarView = new menuBarView();
+        ControlsView controlsView = new ControlsView();
+        GridView gridView = new GridView(resolutionPX, resolutionPY, 10, 10, 20, 45);
+        NodeListView nodeListView = new NodeListView();
 
-        Menu settingsMenu = new Menu("Settings");
-        menuBar.getMenus().add(settingsMenu);
-        MenuItem menuGeneralSettings = new MenuItem("General Settings");
-        settingsMenu.getItems().addAll(menuGeneralSettings);
+        VBox controls = controlsView.getMainLayout();
+        Pane grid = gridView.getMainLayout();
+        VBox nodeList = nodeListView.getvBox1();
+
 
         BorderPane mainView = new BorderPane();
-        mainView.setTop(menuBar);
+        mainView.setRight(controls);
+        mainView.setCenter(grid);
+        mainView.setLeft(nodeList);
+        mainView.setTop(menuBarView.getMainLayout());
 
-        controlsView controlsView = new controlsView();
+        BorderPane.setMargin(controls, new Insets(40));
+        BorderPane.setMargin(nodeList, new Insets(40));
 
-        mainView.setRight(controlsView.getManualControls());
+
+        gridView.markTraversed(0,0, 1, 0);
+        gridView.markUntraversed(3,3, 4, 3);
+        gridView.markObjectLocation(1,1, "A1");
+        gridView.markObjectDestination(2,2, "A2");
+        gridView.markObstructionLocation(3,3, "A3");
+        gridView.markBoeBotLocation(4,4);
+
+
 
         primaryStage.setScene(new Scene(mainView));
         primaryStage.show();
-
     }
 }
