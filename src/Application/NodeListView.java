@@ -8,12 +8,12 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
-public class NodeListView {
+class NodeListView {
 
     private VBox vBox = new VBox();
     private ObservableList<NodeList> nodeList = FXCollections.observableArrayList();
 
-    public NodeListView() {
+    NodeListView() {
         Button addButton = new Button("Add");
         Button editButton = new Button("Edit");
         Button deleteButton = new Button("Delete");
@@ -27,28 +27,28 @@ public class NodeListView {
         table.setItems(FXCollections.observableList(nodeList));
         table.setPrefWidth(180);
 
-        TableColumn label = new TableColumn<NodeList, String>("Label");
+        TableColumn<NodeList, String> label = new TableColumn<>("Label");
         label.setPrefWidth(40);
-        label.setCellValueFactory(new PropertyValueFactory<NodeList, String>("label"));
+        label.setCellValueFactory(new PropertyValueFactory<>("label"));
 
-        TableColumn location = new TableColumn("Location");
-        TableColumn destination = new TableColumn("Destination");
+        TableColumn location = new TableColumn<NodeList, Object>("Location");
+        TableColumn destination = new TableColumn<NodeList, Object>("Destination");
 
-        TableColumn locationX = new TableColumn<NodeList, Integer>("X");
+        TableColumn<NodeList, Integer> locationX = new TableColumn<>("X");
         locationX.setPrefWidth(35);
-        locationX.setCellValueFactory(new PropertyValueFactory<NodeList, Integer>("locationX"));
+        locationX.setCellValueFactory(new PropertyValueFactory<>("locationX"));
 
-        TableColumn locationY = new TableColumn<NodeList, Integer>("Y");
+        TableColumn<NodeList, Integer> locationY = new TableColumn<>("Y");
         locationY.setPrefWidth(35);
-        locationY.setCellValueFactory(new PropertyValueFactory<NodeList, Integer>("locationY"));
+        locationY.setCellValueFactory(new PropertyValueFactory<>("locationY"));
 
-        TableColumn destinationX = new TableColumn<NodeList, Integer>("X");
+        TableColumn<NodeList, Integer> destinationX = new TableColumn<>("X");
         destinationX.setPrefWidth(35);
-        destinationX.setCellValueFactory(new PropertyValueFactory<NodeList, Integer>("destinationX"));
+        destinationX.setCellValueFactory(new PropertyValueFactory<>("destinationX"));
 
-        TableColumn destinationY = new TableColumn<NodeList, Integer>("Y");
+        TableColumn<NodeList, Integer> destinationY = new TableColumn<>("Y");
         destinationY.setPrefWidth(35);
-        destinationY.setCellValueFactory(new PropertyValueFactory<NodeList, Integer>("destinationY"));
+        destinationY.setCellValueFactory(new PropertyValueFactory<>("destinationY"));
 
         location.getColumns().addAll(locationX, locationY);
         destination.getColumns().addAll(destinationX, destinationY);
@@ -57,9 +57,12 @@ public class NodeListView {
         addButton.setOnAction(e -> {
 
             AddNodeView addNodeView = new AddNodeView();
+            int[] result = addNodeView.generateAddNodeView();
 
-            NodeList nodeList = new NodeList("A1", addNodeView.getLocationX(), addNodeView.getLocationY(), addNodeView.getDestinationX(), addNodeView.getDestinationY());
-            table.getItems().add(nodeList);
+            if (result != null) {
+                NodeList nodeList = new NodeList("A1", result[0], result[1], result[2], result[3]);
+                table.getItems().add(nodeList);
+            }
         });
 
         editButton.setOnAction(e -> {
@@ -67,8 +70,10 @@ public class NodeListView {
         });
 
         deleteButton.setOnAction(e -> {
-            int index = table.getSelectionModel().getSelectedIndices().get(0);
-            table.getItems().remove(index);
+            if (table.getSelectionModel().getSelectedIndices().size() != 0) {
+                int index = table.getSelectionModel().getSelectedIndices().get(0);
+                table.getItems().remove(index);
+            }
         });
 
         startRouteButton.setOnAction(e -> {
@@ -80,7 +85,7 @@ public class NodeListView {
         vBox.setAlignment(Pos.CENTER);
     }
 
-    public VBox getvBox1() {
+    VBox getVBox1() {
         return vBox;
     }
 }

@@ -26,7 +26,7 @@ public class MainView extends Application {
 
         VBox controls = controlsView.getMainLayout();
         Pane grid = gridView.getMainLayout();
-        VBox nodeList = nodeListView.getvBox1();
+        VBox nodeList = nodeListView.getVBox1();
 
 
         BorderPane mainView = new BorderPane();
