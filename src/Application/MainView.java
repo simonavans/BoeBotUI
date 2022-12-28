@@ -22,11 +22,11 @@ public class MainView extends Application {
         menuBarView menuBarView = new menuBarView();
         ControlsView controlsView = new ControlsView();
         GridView gridView = new GridView(resolutionPX, resolutionPY, 10, 10, 20, 45);
-        NodeListView nodeListView = new NodeListView();
+        ObjectListView objectListView = new ObjectListView(gridView);
 
         VBox controls = controlsView.getMainLayout();
         Pane grid = gridView.getMainLayout();
-        VBox nodeList = nodeListView.getVBox1();
+        VBox nodeList = objectListView.getMainView();
 
 
         BorderPane mainView = new BorderPane();
@@ -37,16 +37,6 @@ public class MainView extends Application {
 
         BorderPane.setMargin(controls, new Insets(40));
         BorderPane.setMargin(nodeList, new Insets(40));
-
-
-        gridView.markTraversed(0,0, 1, 0);
-        gridView.markUntraversed(3,3, 4, 3);
-        gridView.markObjectLocation(1,1, "A1");
-        gridView.markObjectDestination(2,2, "A2");
-        gridView.markObstructionLocation(3,3, "A3");
-        gridView.markBoeBotLocation(4,4);
-
-
 
         primaryStage.setScene(new Scene(mainView));
         primaryStage.show();

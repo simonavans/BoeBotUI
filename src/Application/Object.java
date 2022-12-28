@@ -3,7 +3,7 @@ package Application;
 /**
  * Data model class for the table view of the list of objects and their location destination.
  */
-public class NodeList {
+public class Object {
 
     private String label;
     private int locationX;
@@ -12,7 +12,7 @@ public class NodeList {
     private int destinationY;
 
     /**
-     * Constructor of the data model class NodeList, used for the table view containing the list of objects or
+     * Constructor of the data model class Object, used for the table view containing the list of objects or
      * obstructions
      * @param label The label of the given object, displayed in the GUI.
      * @param locationX The X coordinate of the location of the object.
@@ -22,7 +22,7 @@ public class NodeList {
      *
      * @author Kerr
      */
-     NodeList(String label, int locationX, int locationY, int destinationX, int destinationY) {
+     Object(String label, int locationX, int locationY, int destinationX, int destinationY) {
         this.label = label;
         this.locationX = locationX;
         this.locationY = locationY;

@@ -18,6 +18,7 @@ import java.util.HashMap;
 // TODO add functionality: connect object list to visual representation.
 // TODO add functionality: connect calculated path to visual representation.
 //TODO add functionality: update robot location live.
+//TODO see if pointsofitnerests list is required
 
 /**
  * Class that controls layout and functionality of the grid view, like live location of the robot, location of objects,
@@ -259,6 +260,7 @@ public class GridView {
      * @author Kerr
      */
     void deletePointOfInterest (int x, int y) {
+        mainLayout.getChildren().remove(pointsOfInterestLocations.get(x + "-" + y));
         pointsOfInterestLocations.remove(x + "-" + y);
     }
 
