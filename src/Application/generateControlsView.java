@@ -1,8 +1,6 @@
 package Application;
 
-import javafx.geometry.Pos;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
@@ -42,8 +40,7 @@ class ControlsView {
 
 
         // Set basic format of the main Layout
-        mainLayout = new VBox(new Label("Manual Controls"));
-        mainLayout.setAlignment(Pos.CENTER);
+        mainLayout = new VBox();
         mainLayout.setSpacing(10);
 
         // Add all buttons to the mainLayout

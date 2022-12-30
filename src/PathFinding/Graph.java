@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public abstract class Graph {
 
-    HashMap<String, Node> nodes = new HashMap<>(); // list of nodes in this graph //TODO Is een HashMap hier handig? Ik wist niet zeker welk datatype praktisch is te gebruiken?
+    HashMap<String, Node> nodes = new HashMap<>(); // list of nodes in this graph
 
     // Getters
 
@@ -45,7 +45,7 @@ public abstract class Graph {
      *
      * @author Kerr
      */
-    void addObstruction(int x, int y) {this.getNode(x, y).addObstruction();}
+    public void addObstruction(int x, int y) {this.getNode(x, y).addObstruction();}
 
     /**
      * Remove an obstruction on a node given its x and y value.
@@ -54,7 +54,7 @@ public abstract class Graph {
      *
      * @author Kerr
      */
-    void removeObstruction(int x, int y) {this.getNode(x, y).removeObstruction();}
+    public void removeObstruction(int x, int y) {this.getNode(x, y).removeObstruction();}
 
     /**
      * Reset the weight from all nodes to the start point in the graph.

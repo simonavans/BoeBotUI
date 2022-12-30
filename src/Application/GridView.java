@@ -8,17 +8,16 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
-// TODO make a legend (do when shape format is final)
-// TODO improve format of: grid, untraversed path, traversed path, object location, object destination, obstruction
 // TODO change the robot shape to an image of the robot.
-// TODO add functionality: connect object list to visual representation.
 // TODO add functionality: connect calculated path to visual representation.
-//TODO add functionality: update robot location live.
-//TODO see if pointsofitnerests list is required
+// TODO add functionality: update robot location live.
 
 /**
  * Class that controls layout and functionality of the grid view, like live location of the robot, location of objects,
@@ -56,7 +55,7 @@ public class GridView {
 
         this.gridStartPX = gridStartPX;
         this.gridSquareSize = ((gridSize * resolutionPX / 100.0) / (double) (gridWidth - 1));
-        this.gridEndPY = (resolutionPY - 65) - ((resolutionPY - 65) - gridSquareSize * (gridHeight - 1)) / 2;
+        this.gridEndPY = (resolutionPY - 248) - ((resolutionPY - 248) - gridSquareSize * (gridHeight - 1)) / 2;
 
         generateGridView();
     }
@@ -74,6 +73,8 @@ public class GridView {
 
                 // Create a line segment and add the line segment to the layout
                 Line line = new Line(convertXtoPX(nodeX), convertYtoPY(nodeY) , convertXtoPX(nodeX + 1), convertYtoPY(nodeY));
+                line.setStrokeWidth(3);
+                line.setStroke(Color.gray(0.75));
                 mainLayout.getChildren().addAll(line);
 
                 // Add the line segment to the collection of line segments for future reference
@@ -87,6 +88,8 @@ public class GridView {
 
                 // Create a line segment and add the line segment to the layout
                 Line line = new Line(convertXtoPX(nodeX), convertYtoPY(nodeY) , convertXtoPX(nodeX), convertYtoPY(nodeY + 1));
+                line.setStrokeWidth(3);
+                line.setStroke(Color.gray(0.75));
                 mainLayout.getChildren().addAll(line);
 
                 // Add the line segment to the collection of line segments for future reference
@@ -154,7 +157,7 @@ public class GridView {
      * @author Kerr
      */
     void markUntraversed(int startX, int startY, int endX, int endY) {
-        getLineSegment(startX, startY, endX, endY).setStroke(Color.RED);
+        getLineSegment(startX, startY, endX, endY).setStroke(Color.rgb(198,0,48));
     }
 
     /**
@@ -177,7 +180,7 @@ public class GridView {
      */
     public void resetLineSegments(){
         for (Line line : lineSegments.values()) {
-            line.setStroke(Color.BLACK);
+            line.setStroke(Color.gray(0.75));
         }
     }
 
@@ -191,12 +194,15 @@ public class GridView {
      *
      * @author Kerr
      */
-    private Text createCenterdText(int x, int y, String label) {
+    private Text createCenteredText(int x, int y, String label, boolean isWhite) {
         Text text = new Text(label);
+        Font font = Font.font("Verdana", FontWeight.BOLD, 13);
+        text.setFont(font);
         text.setX(convertXtoPX(x) - text.prefWidth(-1) / 2);
         text.setY(convertYtoPY(y));
         text.setTextOrigin(VPos.CENTER);
 
+        if (isWhite) {text.setFill(Color.WHITE);}
         return text;
     }
 
@@ -209,11 +215,9 @@ public class GridView {
      * @author Kerr
      */
     void markObjectLocation(int x, int y, String label) {
-        Circle circle = new Circle(convertXtoPX(x), convertYtoPY(y), 15, Color.RED);
-
-        Group group = new Group(circle, createCenterdText(x, y, label));
+        Circle circle = new Circle(convertXtoPX(x), convertYtoPY(y), 15, Color.rgb(198,0,48));
+        Group group = new Group(circle, createCenteredText(x, y, label, true));
         mainLayout.getChildren().addAll(group);
-
         pointsOfInterestLocations.put(x + "-" + y, group);
     }
 
@@ -227,9 +231,10 @@ public class GridView {
      */
     void markObjectDestination(int x, int y, String label) {
         Circle circle = new Circle(convertXtoPX(x), convertYtoPY(y), 15, Color.WHITE);
-        circle.setStroke(Color.RED);
+        circle.setStroke(Color.rgb(198,0,48));
+        circle.setStrokeWidth(2);
 
-        Group group = new Group(circle, createCenterdText(x, y, label));
+        Group group = new Group(circle, createCenteredText(x, y, label, false));
         mainLayout.getChildren().addAll(group);
 
         pointsOfInterestLocations.put(x + "-" + y, group);
@@ -246,7 +251,7 @@ public class GridView {
     void markObstructionLocation(int x, int y, String label) {
         Circle circle = new Circle(convertXtoPX(x), convertYtoPY(y), 15, Color.GRAY);
 
-        Group group = new Group(circle, createCenterdText(x, y, label));
+        Group group = new Group(circle, createCenteredText(x, y, label, true));
         mainLayout.getChildren().addAll(group);
 
         pointsOfInterestLocations.put(x + "-" + y, group);
@@ -276,5 +281,16 @@ public class GridView {
         rectangle.setY(convertYtoPY(y) - 12);
 
         mainLayout.getChildren().addAll(rectangle);
+    }
+
+    void markRoute(ArrayList<int[]> route) {
+        for (int i = 0; i < route.size() - 1; i++) {
+            int x1 = route.get(i)[0];
+            int x2 = route.get(i + 1)[0];
+            int y1 = route.get(i)[1];
+            int y2 = route.get(i + 1)[1];
+
+            markUntraversed(Math.min(x1, x2), Math.min(y1, y2), Math.max(x1, x2), Math.max(y1, y2));
+        }
     }
 }

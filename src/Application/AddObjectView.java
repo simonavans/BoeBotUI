@@ -10,6 +10,8 @@ class AddObjectView {
     // TODO make error message nicer (preferably in the same window)
     // TODO make the spinner maximum dependent on the width/height
     // TODO check if there is already an objectList on/going to that location/destination (if statement construct is already present)
+    // TODO check if we can work with callbacks for this
+    // TODO check if showAndWait causes problems like boebot.Wait
 
     /**
      * Opens a dialog box that allows the user to add an object (with location and destination)
@@ -62,6 +64,7 @@ class AddObjectView {
         // Create a new GridPane and add all the previously created labels and TextFields to it.
         GridPane mainView = new GridPane();
         mainView.setHgap(10);
+        mainView.setVgap(10);
 
         mainView.add(locationXLabel, 0, 0);
         mainView.add(locationYLabel, 0, 1);
@@ -96,7 +99,6 @@ class AddObjectView {
 
             // Check if illegal inputs are found
             if (false) {
-
                 Alert errorAlert = new Alert(Alert.AlertType.ERROR);
                 errorAlert.setHeaderText(null);
                 errorAlert.setContentText("There is already an objectList here!");
@@ -107,26 +109,29 @@ class AddObjectView {
 
                 // If index is set to -1, a new object is to be added
                 String objectLabel = "A" + (objectList.size() + 1);
-                Object object = new Object(objectLabel, locationXInput, locationYInput, destinationXInput, destinationYInput);
-                objectListView.getObjectTable().getItems().add(object);
 
                 // Update the gridView
                 gridView.markObjectLocation(locationXInput, locationYInput, objectLabel);
                 gridView.markObjectDestination(destinationXInput, destinationYInput, objectLabel);
 
+                // Update the tableView
+                Object object = new Object(objectLabel, locationXInput, locationYInput, destinationXInput, destinationYInput);
+                objectListView.getObjectTable().getItems().add(object);
+
             } else {
 
                 // If index is not set to -1, an existing object is to be changed
+
+                // Update the gridView
+                gridView.deletePointOfInterest( objectList.get(index).getLocationX(),  objectList.get(index).getLocationY());
+                gridView.deletePointOfInterest( objectList.get(index).getDestinationX(),  objectList.get(index).getDestinationY());
+                gridView.markObjectLocation(locationXInput, locationYInput, objectList.get(index).getLabel());
+                gridView.markObjectDestination(destinationXInput, destinationYInput, objectList.get(index).getLabel());
+
+                // Update the tableView
                 Object object = new Object(objectList.get(index).getLabel(), locationXInput, locationYInput, destinationXInput, destinationYInput);
                 objectListView.getObjectTable().getItems().remove(index);
                 objectListView.getObjectTable().getItems().add(object);
-
-                // Update the gridView
-                //TODO this does not work??
-                gridView.deletePointOfInterest(locationXInput, locationYInput);
-                gridView.deletePointOfInterest(destinationXInput, destinationYInput);
-                gridView.markObjectLocation(locationXInput, locationYInput, objectList.get(index).getLabel());
-                gridView.markObjectDestination(destinationXInput, destinationYInput, objectList.get(index).getLabel());
             }
         });
 

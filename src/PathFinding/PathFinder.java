@@ -11,8 +11,8 @@ public class PathFinder {
     private final Graph grid;
 
     private Node startNode; // the current starting location of the boebot
-    private int startOrientationVX; //TODO it is nicer to summarize this in one variable (angle)
-    private int startOrientationVY;  //TODO See above
+    private int startOrientationVX;
+    private int startOrientationVY;
 
     /**
      * Constructs a pathfinder given a certain graph, start location and start orientation.
@@ -24,7 +24,7 @@ public class PathFinder {
      * @param startOrientationY y-component of the vector facing the same direction as the boebot
      * @author Kerr
      */
-    PathFinder(Graph grid, int startX, int startY, int startOrientationX, int startOrientationY) {
+    public PathFinder(Graph grid, int startX, int startY, int startOrientationX, int startOrientationY) {
         this.grid = grid;
 
         this.startNode = grid.getNode(startX, startY);
@@ -42,7 +42,7 @@ public class PathFinder {
      * (meaning the destination is unreachable), return null
      * @author Kerr
      */
-    ArrayList<String> calculateShortestPathFromSource(int destinationX, int destinationY) {
+    public ArrayList<Node> calculateShortestPathFromSource(int destinationX, int destinationY, boolean dropOff) {
         // Reset residue from possible previous executions
         grid.resetNodeDistance();
         grid.resetNodeShortestPath();
@@ -68,7 +68,7 @@ public class PathFinder {
                 // If the node is already settled, do not check it. Do not check it either if the node is blocked by an
                 // object UNLESS this node is the destination (then the object needs to be picked up)
                 if (!settledNodes.contains(adjacentNode) && !adjacentNode.isObstructed() || adjacentNode.equals(destinationNode)) {
-                    Integer edgeWeight = calculateAngle( calculateEdgeAngle(currentNode, adjacentNode)) / 90 * 20 + 10; //TODO fix 'random' numbers
+                    Integer edgeWeight = calculateAngle( calculateVectors(currentNode, adjacentNode)) / 90 * 20 + 10; //TODO fix 'random' numbers
                     calculateMinimumDistance(adjacentNode, edgeWeight, currentNode);
                     unsettledNodes.add(adjacentNode);
                 }
@@ -79,15 +79,20 @@ public class PathFinder {
             // If the currentNode is the destination node, the shortest route (should) be found and this route can be returned
             if (currentNode.equals(destinationNode)) {
 
-                destinationNode.getShortestPath().add(destinationNode);
-                ArrayList<String> route = this.convertRouteToString(destinationNode.getShortestPath());
+                ArrayList<Node> route = destinationNode.getShortestPath();
 
-                // Update the location and orientation of the boebot to its final orientation of its destination
-                Node previousNode = destinationNode.getShortestPath().get(destinationNode.getShortestPath().size() - 2);
+                // Update the location and orientation of the boebot to its final orientation and destination
+                Node previousNode = destinationNode.getShortestPath().get(destinationNode.getShortestPath().size() - 1);
                 startOrientationVY = currentNode.getY() - previousNode.getY();
                 startOrientationVX = currentNode.getX() - previousNode.getX();
-                startNode = destinationNode;
 
+                if (dropOff) {
+                    startNode = previousNode;
+                } else {
+                    startNode = destinationNode;
+                }
+
+                route.add(destinationNode);
                 return route;
             }
         }
@@ -145,6 +150,11 @@ public class PathFinder {
 
     //TODO The following methods are still in their beta phase
 
+
+    private int[] calculateVectors(Node curretNode, Node destinationNode) {
+        return calculateVectors(curretNode, destinationNode, startOrientationVX, startOrientationVY);
+    }
+
     /**
      * Helper method that calculates the angle of the path between two given nodes, based on the orientation of the
      * boebot.
@@ -154,7 +164,7 @@ public class PathFinder {
      * @return the angle of the path between the two given nodes
      * @author Kerr
      */
-    private int[] calculateEdgeAngle(Node currentNode, Node destinationNode) {
+    private int[] calculateVectors(Node currentNode, Node destinationNode, int startOrientationVX, int startOrientationVY) {
 
         // Define the node from which the boebot came, together with its orientation vector x and y component
         Node previousNode;
@@ -163,7 +173,7 @@ public class PathFinder {
 
         // Define the orientation vector x and y of the boebot if it moved to the adjacent node
         int destinationNodeNodeVX = destinationNode.getX() - currentNode.getX();
-        int destinationNodeVY = destinationNode.getY() - currentNode.getY(); //TODO this was previously wrong, now correct
+        int destinationNodeVY = destinationNode.getY() - currentNode.getY();
 
         // if the boebot is not in its starting position, define the orientation of the boebot by its previous location
         // and where it moved to. Else, define the orientation as its starting orientation
@@ -179,26 +189,30 @@ public class PathFinder {
     }
 
 
+
     private int calculateAngle(int[] vectors) {
         int dotProduct = (vectors[0] * vectors[2] + vectors[1] * vectors[3]);
         return (int) (Math.acos(dotProduct) * 180 / Math.PI);
     }
 
+
+
+
     private String calculateDirection(int[] vectors) {
         int dotProduct = (vectors[0] * vectors[2] + vectors[1] * vectors[3]);
         if (dotProduct == 0) {
             if (vectors[0] == 0 && vectors[1] == 1) {
-                if (vectors[2] == -1) {return "Turn left90";}
-                else {return "Turn right90";}
+                if (vectors[2] == -1) {return "Turn left";}
+                else {return "Turn right";}
             } else if (vectors[0] == 0 && vectors[1] == -1) {
-                if (vectors[2] == -1) {return "Turn right180";}
-                else {return "Turn left180";}
+                if (vectors[2] == -1) {return "Turn right";}
+                else {return "Turn left";}
             } else if (vectors[1] == 0 && vectors[0] == 1) {
-                if (vectors[3] == 1) {return "Turn left0";}
-                else {return "Turn right0";}
+                if (vectors[3] == 1) {return "Turn left";}
+                else {return "Turn right";}
             } else {
-                if (vectors[3] == -1) {return "Turn left270";}
-                else {return "Turn right270";}
+                if (vectors[3] == -1) {return "Turn left";}
+                else {return "Turn right";}
             }
         } else if (dotProduct == 1) {
             return "Go straight";
@@ -207,12 +221,23 @@ public class PathFinder {
         }
     }
 
-    public ArrayList<String> convertRouteToString(ArrayList<Node> route) {
+    public ArrayList<int[]> convertRouteToInt(ArrayList<Node> route) {
+        ArrayList<int[]> routeToInt  = new ArrayList<>();
+
+        for (int i = 0; i < route.size(); i++) {
+            int[] step = {route.get(i).getX(), route.get(i).getY()};
+            routeToInt.add(step);
+            }
+            return routeToInt;
+        }
+
+
+    public ArrayList<String> convertRouteToString(ArrayList<Node> route, int startOrientationVX, int startOrientationVY, boolean dropOff) {
         ArrayList<String> routeToString = new ArrayList<>();
 
         for (int i = 0; i < route.size() - 1; i++) {
 
-            int[] vectors = calculateEdgeAngle(route.get(i), route.get(i + 1));
+            int[] vectors = calculateVectors(route.get(i), route.get(i + 1), startOrientationVX, startOrientationVY);
             String step = calculateDirection(vectors);
             routeToString.add(step);
 
@@ -220,8 +245,16 @@ public class PathFinder {
                 routeToString.add("Go straight");
             }
         }
-        return routeToString;
 
+        if (dropOff) {
+            routeToString.remove(routeToString.size() - 1);
+            routeToString.add("Drop Off");
+        }
+
+        return routeToString;
     }
 
+    public int getStartOrientationVX() {return startOrientationVX;}
+
+    public int getStartOrientationVY() {return startOrientationVY;}
 }

@@ -7,7 +7,7 @@ package PathFinding;
  */
 public class Grid extends Graph {
 
-    private final int width; //TODO Op dit moment zijn deze attributen niet perse nodig, maar ik laat ze er voor nu inzitten omdat ze handig zouden kunnen zijn
+    private final int width;
     private final int height;
 
     /**
@@ -19,7 +19,7 @@ public class Grid extends Graph {
      *
      * @author Kerr
      */
-    Grid(int width, int height) {
+    public Grid(int width, int height) {
         super();
         this.width = width;
         this.height = height;
@@ -52,7 +52,7 @@ public class Grid extends Graph {
 
             // Node is not on left edge
             if (node.getX() != 0) {
-                node.addAdjacentNode(super.getNode(node.getX() - 1, node.getY())); //TODO Is dit handig om zo te doen (met super bedoel ik)?
+                node.addAdjacentNode(super.getNode(node.getX() - 1, node.getY()));
             }
             // Node is not on right edge
             if (node.getX() != (width - 1)) {
