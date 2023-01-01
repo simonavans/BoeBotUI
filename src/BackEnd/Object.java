@@ -1,4 +1,4 @@
-package Application;
+package BackEnd;
 
 /**
  * Data model class for the table view of the list of objects and their location destination.
@@ -22,7 +22,7 @@ public class Object {
      *
      * @author Kerr
      */
-     Object(String label, int locationX, int locationY, int destinationX, int destinationY) {
+     public Object(String label, int locationX, int locationY, int destinationX, int destinationY) {
         this.label = label;
         this.locationX = locationX;
         this.locationY = locationY;
@@ -30,7 +30,7 @@ public class Object {
         this.destinationY = destinationY;
     }
 
-
+    // TODO determine if setters are needed
     // Setters
 
     /**
@@ -82,7 +82,6 @@ public class Object {
     public void setDestinationY(int destinationY) {
         this.destinationY = destinationY;
     }
-
 
     // Getters
 

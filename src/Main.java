@@ -1,6 +1,6 @@
 import javafx.application.Application;
 
-import Application.MainView;
+import FrontEnd.MainView;
 
 public class Main {
 

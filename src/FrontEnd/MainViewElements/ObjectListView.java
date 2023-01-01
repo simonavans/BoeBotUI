@@ -1,5 +1,7 @@
-package Application;
+package FrontEnd.MainViewElements;
 
+import BackEnd.Object;
+import FrontEnd.MainView;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
@@ -8,14 +10,12 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
-// TODO make start route button functional
-
 /**
  * Class that is responsible for creating a tableView with a list of object locations and destinations together with
- * adding functionality for add/edit/delete buttons for manipulating this data. Finally it adds a start route button,
+ * adding add/edit/delete buttons for manipulating this data. Finally it adds a start route button,
  * that sends data about the route to the Boebot.
  */
-class ObjectListView {
+public class ObjectListView {
 
     private VBox mainView = new VBox();
     private ObservableList<Object> objectList = FXCollections.observableArrayList();
@@ -23,14 +23,14 @@ class ObjectListView {
 
     /**
      * Constructor that generates a TableView with with a list of object locations and destinations together with
-     * adding functionality for add/edit/delete buttons for manipulating this data. Finally it adds a start route button,
+     * adding  add/edit/delete buttons for manipulating this data. Finally it adds a start route button,
      * that sends data about the route to the Boebot.
      * The TableView also manipulates the gridView of the GUI
-     * @param gridView the gridView that will be manipulated by the TableView
+     * @param callback class to which the method should callback
      *
      * @author Kerr
      */
-    ObjectListView(GridView gridView, PathfinderManager pathfinderManager) {
+    public ObjectListView(MainView callback) {
 
         // Create four buttons for adding, editing, deleting objects and starting a route
         Button addButton = new Button("Add");
@@ -54,8 +54,8 @@ class ObjectListView {
         label.setCellValueFactory(new PropertyValueFactory<>("label"));
 
         // Add a new TableColumn used by the location X and Y data and destination X and Y data
-        TableColumn location = new TableColumn<Object, java.lang.Object>("Location");
-        TableColumn destination = new TableColumn<Object, java.lang.Object>("Destination");
+        TableColumn<Object, Integer> location = new TableColumn<>("Location");
+        TableColumn<Object, Integer> destination = new TableColumn<>("Destination");
 
         // Add a new TableColumn for the location X and Y data and destination X and Y data
         TableColumn<Object, Integer> locationX = new TableColumn<>("X");
@@ -84,29 +84,17 @@ class ObjectListView {
         mainView.setAlignment(Pos.CENTER);
 
         // Buttons functionality
-        addButton.setOnAction(e -> AddObjectView.addNodeDialog(gridView, this));
+        addButton.setOnAction(e -> callback.onObjectListEvent("Add"));
 
-        editButton.setOnAction(e -> {
-            if (objectTable.getSelectionModel().getSelectedIndices().size() != 0) {
-                int index = objectTable.getSelectionModel().getSelectedIndices().get(0);
-                AddObjectView.addNodeDialog(gridView, this, index);
-            }
-        });
+        editButton.setOnAction(e -> callback.onObjectListEvent("Edit"));
 
-        deleteButton.setOnAction(e -> {
+        deleteButton.setOnAction(e -> callback.onObjectListEvent("Delete"));
 
-            if (objectTable.getSelectionModel().getSelectedIndices().size() != 0) {
-                int index = objectTable.getSelectionModel().getSelectedIndices().get(0);
+        startRouteButton.setOnAction(e -> callback.onObjectListEvent("Start Route"));
+    }
 
-
-                gridView.deletePointOfInterest(objectTable.getItems().get(index).getLocationX(), objectTable.getItems().get(index).getLocationY());
-                gridView.deletePointOfInterest(objectTable.getItems().get(index).getDestinationX(), objectTable.getItems().get(index).getDestinationY());
-
-                objectTable.getItems().remove(index);
-            }
-        });
-
-        startRouteButton.setOnAction(e -> pathfinderManager.configurePathfinder(objectList));
+    public void updateObjectListView() {
+        objectTable.getItems().clear();
     }
 
     // Getters
@@ -117,13 +105,13 @@ class ObjectListView {
      *
      * @author Kerr
      */
-    VBox getMainView() {return mainView;}
+    public VBox getMainView() {return mainView;}
 
     /**
      * Getter method that returns the objectList, the ObservableList responsible for the TableView
      * @return the ObservableList responsible for the TableView
      */
-    ObservableList<Object> getObjectList() {return objectList;}
+    public ObservableList<Object> getObjectList() {return objectList;}
 
     /**
      * Getter method that returns the objectTable, that TableView containing all the object data.
@@ -131,5 +119,5 @@ class ObjectListView {
      *
      * @author Kerr
      */
-    TableView<Object> getObjectTable() {return objectTable;}
+    public TableView<Object> getObjectTable() {return objectTable;}
 }

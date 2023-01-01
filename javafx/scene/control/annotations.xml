@@ -1,0 +1,5 @@
+<root>
+    <item name='javafx.scene.control.TableColumn javafx.collections.ObservableList&lt;javafx.scene.control.TableColumn&lt;S,?&gt;&gt; getColumns()'>
+        <annotation name='org.jetbrains.annotations.NotNull'/>
+    </item>
+</root>

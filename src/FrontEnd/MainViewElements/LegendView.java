@@ -1,4 +1,4 @@
-package Application;
+package FrontEnd.MainViewElements;
 
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
@@ -12,17 +12,14 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
-class LegendView {
-
-    //TODO Connect the legend to the markObject, markObstruction and markPath methods of the gridView class, so the
-    // format needs to be changed only once.
+public class LegendView {
 
     private GridPane mainLayout;
 
     /**
      * Generates a legend to explain the symbols in the GridView
      */
-    LegendView() {
+    public LegendView() {
 
         // Create main font
         javafx.scene.text.Font font = Font.font("Verdana", FontWeight.BOLD, 13);
@@ -31,7 +28,7 @@ class LegendView {
         Circle locationCircle = new Circle(0, 0, 15, Color.rgb(198,0,48));
 
         // Create centered label for the circle symbol
-        Text objectLocationLabel = new Text("A0");
+        Text objectLocationLabel = new Text("0A");
         objectLocationLabel.setFont(font);
         objectLocationLabel.setX(-objectLocationLabel.prefWidth(-1) / 2);
         objectLocationLabel.setY(0);
@@ -47,7 +44,7 @@ class LegendView {
         destinationCircle.setStrokeWidth(2);
 
         // Create centered label for the circle symbol
-        Text objectDestinationLabel = new Text("A0");
+        Text objectDestinationLabel = new Text("0B");
         objectDestinationLabel.setFont(font);
         objectDestinationLabel.setX(-objectDestinationLabel.prefWidth(-1) / 2);
         objectDestinationLabel.setY(0);
@@ -60,7 +57,7 @@ class LegendView {
         Circle obstructionCircle = new Circle(0, 0, 15, Color.GRAY);
 
         // Create centered label for the circle symbol
-        Text obstructionLocationLabel = new Text("A0");
+        Text obstructionLocationLabel = new Text("X");
         obstructionLocationLabel.setFont(font);
         obstructionLocationLabel.setX(-obstructionLocationLabel.prefWidth(-1) / 2);
         obstructionLocationLabel.setY(0);
@@ -124,5 +121,5 @@ class LegendView {
      *
      * @author Kerr
      */
-    GridPane getMainLayout() {return this.mainLayout;}
+    public GridPane getMainLayout() {return this.mainLayout;}
 }

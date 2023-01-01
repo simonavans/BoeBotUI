@@ -1,10 +1,10 @@
-package PathFinding;
+package BackEnd.PathFinding;
 
 import java.util.HashMap;
 
 public abstract class Graph {
 
-    HashMap<String, Node> nodes = new HashMap<>(); // list of nodes in this graph
+    private HashMap<String, Node> nodes = new HashMap<>(); // list of nodes in this graph
 
     // Getters
 

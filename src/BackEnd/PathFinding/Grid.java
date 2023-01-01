@@ -1,4 +1,6 @@
-package PathFinding;
+package BackEnd.PathFinding;
+
+import FrontEnd.MainView;
 
 /**
  * Superclass that defines a graph: a collection of connected nodes. A graph consists of an ArrayList of nodes. Each
@@ -7,23 +9,32 @@ package PathFinding;
  */
 public class Grid extends Graph {
 
-    private final int width;
-    private final int height;
+    private int width;
+    private int height;
+    private MainView callback;
 
     /**
      * Construct a grid shaped Graph given a width and height. all nodes are connected to their neighboring nodes
      * (minimum of 2, maximum of 4) with angles of 180 or 90 degrees. The starting coordinate is (0,0) and the final
      * coordinate is (width - 1 , height - 1).
-     * @param width the number of nodes in the x direction
-     * @param height the number of nodes in the y direction
+     * @param callback class to which the method should callback
      *
      * @author Kerr
      */
-    public Grid(int width, int height) {
+    public Grid(MainView callback) {
         super();
-        this.width = width;
-        this.height = height;
+        this.callback = callback;
+        updateGrid();
+    }
 
+    /**
+     * Method that updates the grid to the current size
+     */
+    public void updateGrid() {
+        this.width = callback.getSettingsView().gridWidth;
+        this.height = callback.getSettingsView().gridHeight;
+
+        super.getGraphNodes().clear();
         generateGrid();
         generateAdjacencyList();
     }
@@ -48,7 +59,7 @@ public class Grid extends Graph {
      * @author Kerr
      */
     private void generateAdjacencyList() {
-        for (Node node : nodes.values()) {
+        for (Node node : super.getGraphNodes().values()) {
 
             // Node is not on left edge
             if (node.getX() != 0) {
@@ -68,28 +79,4 @@ public class Grid extends Graph {
             }
         }
     }
-
-
-    // Getters
-
-    /**
-     * Get the width of the grid (the number of nodes in the x direction).
-     * @return the width of the grid
-     *
-     * @author Kerr
-     */
-    public int getWidth() {
-        return width;
-    }
-
-    /**
-     * Get the height of the grid (the number of nodes in the y direction).
-     * @return the height of the grid
-     *
-     * @author Kerr
-     */
-    public int getHeight() {
-        return height;
-    }
-
 }

@@ -1,45 +1,116 @@
-package PathFinding;
+package BackEnd.PathFinding;
+
+import FrontEnd.MainView;
 
 import java.util.ArrayList;
 
 /**
- * Class that implements a path finding algorithm based on the Dijkstra algorithm inspired by
+ * Class that implements a path finding algorithm based on the Dijkstra algorithm. Inspired by
  * https://www.baeldung.com/java-dijkstra
  */
 public class PathFinder {
 
-    private final Graph grid;
+    private MainView callback;
+    private Graph grid;
 
-    private Node startNode; // the current starting location of the boebot
+    private int startX;
+    private int startY;
+    private Node startNode;
+
     private int startOrientationVX;
     private int startOrientationVY;
+
+    private int turnWeight;
+    private int forwardWeight;
 
     /**
      * Constructs a pathfinder given a certain graph, start location and start orientation.
      *
-     * @param grid              graph which the boebot will follow
-     * @param startX            x location of the starting location of the boebot
-     * @param startY            y location of the starting location of the boebot
-     * @param startOrientationX x-component of the vector facing the same direction as the boebot
-     * @param startOrientationY y-component of the vector facing the same direction as the boebot
+     * @param callback class to which the method should callback
+     *
      * @author Kerr
      */
-    public PathFinder(Graph grid, int startX, int startY, int startOrientationX, int startOrientationY) {
-        this.grid = grid;
+    public PathFinder(MainView callback) {
+        this.callback = callback;
+        updateGrid();
+        updateStartLocation();
+        updateStartOrientation();
+        updateWeights();
+    }
 
+    public void updateGrid() {
+        this.grid = callback.getGrid();
+    }
+
+    public void updateStartLocation() {
+        this.startX = callback.getSettingsView().boebotX;
+        this.startY = callback.getSettingsView().boebotY;
         this.startNode = grid.getNode(startX, startY);
-        this.startOrientationVX = startOrientationX;
-        this.startOrientationVY = startOrientationY;
+    }
+
+    public void updateStartOrientation() {
+        this.startOrientationVX = callback.getSettingsView().boebotVX;
+        this.startOrientationVY = callback.getSettingsView().boebotVY;
+    }
+
+    public void updateWeights() {
+        this.turnWeight = callback.getSettingsView().turnWeight;
+        this.forwardWeight = callback.getSettingsView().forwardWeight;
     }
 
     /**
-     * Calculate the shortest route (the route that takes the leas amount of time to complete) between the boebots
+     * Getter method that returns the X component of the location of the robot.
+     * @return X component of the location of the robot.
+     *
+     * @author Kerr
+     */
+    public int getStartX() { return startX;}
+
+    /**
+     * Getter method that returns the Y component of the location of the robot.
+     * @return Y component of the location of the robot.
+     *
+     * @author Kerr
+     */
+    public int getStartY() { return startY; }
+
+    /**
+     * Getter method that returns the X component of the orientation vector of the robot.
+     * @return X component of the orientation vector of the robot.
+     *
+     * @author Kerr
+     */
+    public int getStartOrientationVX() {return startOrientationVX;}
+
+    /**
+     * Getter method that returns the Y component of the orientation vector of the robot.
+     * @return Y component of the orientation vector of the robot.
+     *
+     * @author Kerr
+     */
+    public int getStartOrientationVY() {return startOrientationVY;}
+
+    /**
+     * Getter method that returns the weight of making a corner.
+     * @return the weight of making a corner.
+     */
+    public int getTurnWeight() {return turnWeight;}
+
+    /**
+     * Getter method that returns the weight of moving forward.
+     * @return the weight of making moving forward.
+     */
+    public int getForwardWeight() { return forwardWeight;}
+
+    /**
+     * Calculate the shortest route (the route that takes the leas amount of time to complete) between the robots
      * current location and its destination given by an x and y coordinate
      *
      * @param destinationX the x coordinate of the destination
      * @param destinationY the y coordinate of the destination
-     * @return an ArrayList with Strings which guide the boebot through the shortest route. If no route is found
+     * @return an ArrayList with Strings which guide the robot through the shortest route. If no route is found
      * (meaning the destination is unreachable), return null
+     *
      * @author Kerr
      */
     public ArrayList<Node> calculateShortestPathFromSource(int destinationX, int destinationY, boolean dropOff) {
@@ -68,7 +139,7 @@ public class PathFinder {
                 // If the node is already settled, do not check it. Do not check it either if the node is blocked by an
                 // object UNLESS this node is the destination (then the object needs to be picked up)
                 if (!settledNodes.contains(adjacentNode) && !adjacentNode.isObstructed() || adjacentNode.equals(destinationNode)) {
-                    Integer edgeWeight = calculateAngle( calculateVectors(currentNode, adjacentNode)) / 90 * 20 + 10; //TODO fix 'random' numbers
+                    Integer edgeWeight = calculateAngle( calculateVectors(currentNode, adjacentNode)) / 90 * turnWeight + forwardWeight;
                     calculateMinimumDistance(adjacentNode, edgeWeight, currentNode);
                     unsettledNodes.add(adjacentNode);
                 }
@@ -81,7 +152,7 @@ public class PathFinder {
 
                 ArrayList<Node> route = destinationNode.getShortestPath();
 
-                // Update the location and orientation of the boebot to its final orientation and destination
+                // Update the location and orientation of the robot to its final orientation and destination
                 Node previousNode = destinationNode.getShortestPath().get(destinationNode.getShortestPath().size() - 1);
                 startOrientationVY = currentNode.getY() - previousNode.getY();
                 startOrientationVX = currentNode.getX() - previousNode.getX();
@@ -105,6 +176,7 @@ public class PathFinder {
      *
      * @param unsettledNodes the ArrayList of unsettled (unvisited) nodes
      * @return the node with the lowest distance from the start node.
+     *
      * @author Kerr
      */
     private Node getLowestDistanceNode(ArrayList<Node> unsettledNodes) {
@@ -130,8 +202,9 @@ public class PathFinder {
      * If so, the shortestPath and distance to that node are updated to be the current route.
      *
      * @param evaluationNode the node which a new route has been found, which requires evaluation
-     * @param edgeWeigh      the edge weight of the newly found connection
-     * @param sourceNode     the node from which the newly found connection is found
+     * @param edgeWeigh the edge weight of the newly found connection
+     * @param sourceNode the node from which the newly found connection is found
+     *
      * @author Kerr
      */
     private void calculateMinimumDistance(Node evaluationNode, Integer edgeWeigh, Node sourceNode) {
@@ -145,37 +218,44 @@ public class PathFinder {
         }
     }
 
-
-
-
-    //TODO The following methods are still in their beta phase
-
-
-    private int[] calculateVectors(Node curretNode, Node destinationNode) {
-        return calculateVectors(curretNode, destinationNode, startOrientationVX, startOrientationVY);
+    /**
+     * Helper method that calculates the angle of the path between two given nodes, based on the orientation of the
+     * robot.
+     *
+     * @param currentNode the current location of the robot
+     * @param destinationNode the location of an node adjacent to the current node
+     * @return the angle of the path between the two given nodes
+     *
+     * @author Kerr
+     */
+    private int[] calculateVectors(Node currentNode, Node destinationNode) {
+        return calculateVectors(currentNode, destinationNode, startOrientationVX, startOrientationVY);
     }
 
     /**
      * Helper method that calculates the angle of the path between two given nodes, based on the orientation of the
-     * boebot.
+     * robot.
      *
-     * @param currentNode  the current location of the boebot
+     * @param currentNode the current location of the robot
      * @param destinationNode the location of an node adjacent to the current node
+     * @param startOrientationVX X component of the start orientation of the robot
+     * @param startOrientationVY Y component of the start orientation of the robot
      * @return the angle of the path between the two given nodes
+     *
      * @author Kerr
      */
     private int[] calculateVectors(Node currentNode, Node destinationNode, int startOrientationVX, int startOrientationVY) {
 
-        // Define the node from which the boebot came, together with its orientation vector x and y component
+        // Define the node from which the robot came, together with its orientation vector x and y component
         Node previousNode;
         int previousNodeVX;
         int previousNodeVY;
 
-        // Define the orientation vector x and y of the boebot if it moved to the adjacent node
+        // Define the orientation vector x and y of the robot if it moved to the adjacent node
         int destinationNodeNodeVX = destinationNode.getX() - currentNode.getX();
         int destinationNodeVY = destinationNode.getY() - currentNode.getY();
 
-        // if the boebot is not in its starting position, define the orientation of the boebot by its previous location
+        // if the robot is not in its starting position, define the orientation of the robot by its previous location
         // and where it moved to. Else, define the orientation as its starting orientation
         if (currentNode.getDistance() != 0) {
             previousNode = currentNode.getShortestPath().get(currentNode.getShortestPath().size() - 1);
@@ -188,73 +268,87 @@ public class PathFinder {
         return new int[]{previousNodeVX, previousNodeVY, destinationNodeNodeVX, destinationNodeVY};
     }
 
-
-
+    /**
+     * Helper method that calculates the angle between to vectors
+     * @param vectors list of two vectors in the format {x1, y1, x2, y2}
+     * @return the angle in degrees between the two vectors
+     *
+     * @author Kerr
+     */
     private int calculateAngle(int[] vectors) {
         int dotProduct = (vectors[0] * vectors[2] + vectors[1] * vectors[3]);
         return (int) (Math.acos(dotProduct) * 180 / Math.PI);
     }
 
-
-
-
+    /**
+     * Helper method that determines based on two vectors if the robot moves left, right, backwards or forward
+     * @param vectors list of two vectors in the format {x1, y1, x2, y2}.
+     * @return Direction the robot moves in (L = left, R = right, F = forward, T = backward).
+     *
+     * @author Kerr
+     */
     private String calculateDirection(int[] vectors) {
         int dotProduct = (vectors[0] * vectors[2] + vectors[1] * vectors[3]);
-        if (dotProduct == 0) {
-            if (vectors[0] == 0 && vectors[1] == 1) {
-                if (vectors[2] == -1) {return "Turn left";}
-                else {return "Turn right";}
-            } else if (vectors[0] == 0 && vectors[1] == -1) {
-                if (vectors[2] == -1) {return "Turn right";}
-                else {return "Turn left";}
-            } else if (vectors[1] == 0 && vectors[0] == 1) {
-                if (vectors[3] == 1) {return "Turn left";}
-                else {return "Turn right";}
-            } else {
-                if (vectors[3] == -1) {return "Turn left";}
-                else {return "Turn right";}
-            }
-        } else if (dotProduct == 1) {
-            return "Go straight";
-        } else  {
-            return "Turn around";
-        }
+        int crossProduct = (vectors[0] * vectors[3] - vectors[1] * vectors[2]);
+
+        // If the dot product = 0, the vectors are at 90 degrees. The cross product then determines if the vectors are
+        // right handed (cross product = -1) or left handed (cross product = 1). If the dot product equals 1, the vectors
+        // are at 0 degrees. Else, the vectors are at 180 degrees.
+        if (dotProduct == 0 && crossProduct == -1 ) {return "R";}
+        if (dotProduct == 0 && crossProduct == 1) {return "L";}
+        if (dotProduct == 1) {return "F";}
+        return "T";
     }
 
+    /**
+     * convert a route (given as a list of nodes the robot passes) to a list of coordinates in the format {x, y}.
+     * @param route a list of nodes the robot passes.
+     * @return an ArrayList of arrays with coordinates the robot passes in the format {x, y}
+     *
+     * @author Kerr
+     */
     public ArrayList<int[]> convertRouteToInt(ArrayList<Node> route) {
-        ArrayList<int[]> routeToInt  = new ArrayList<>();
+        ArrayList<int[]> routeToInt = new ArrayList<>();
 
-        for (int i = 0; i < route.size(); i++) {
-            int[] step = {route.get(i).getX(), route.get(i).getY()};
-            routeToInt.add(step);
-            }
-            return routeToInt;
+        for (Node node : route) {
+            routeToInt.add(new int[]{node.getX(), node.getY()});
         }
+        return routeToInt;
+    }
 
+    //TODO this method could be cleaned up a bit further (optional)
 
+    /**
+     * Convert a route (given as a list of nodes the robot passes) to a list of instructions in the format L = turn left,
+     * R = turn right, F = move forward, P = place object here. Turning 180 degrees is defined as turing left twice.
+     * @param route a list of nodes the robot passes.
+     * @param startOrientationVX X component of the orientation vector of the robot.
+     * @param startOrientationVY Y component of the orientation vector of the robot.
+     * @param dropOff true = route is to drop an object off, false = route is to pick an object up.
+     * @return a list of instructions.
+     *
+     * @author Kerr
+     */
     public ArrayList<String> convertRouteToString(ArrayList<Node> route, int startOrientationVX, int startOrientationVY, boolean dropOff) {
         ArrayList<String> routeToString = new ArrayList<>();
 
         for (int i = 0; i < route.size() - 1; i++) {
-
-            int[] vectors = calculateVectors(route.get(i), route.get(i + 1), startOrientationVX, startOrientationVY);
-            String step = calculateDirection(vectors);
+            String step = calculateDirection(calculateVectors(route.get(i), route.get(i + 1), startOrientationVX, startOrientationVY));
             routeToString.add(step);
 
-            if (step.contains("Turn")) {
-                routeToString.add("Go straight");
+            if (step.equals("L") || step.equals("R")) {
+                routeToString.add("F");
+            }
+            if (step.equals("T")) {
+                routeToString.add("L");
+                routeToString.add("L");
             }
         }
 
         if (dropOff) {
             routeToString.remove(routeToString.size() - 1);
-            routeToString.add("Drop Off");
+            routeToString.add("P");
         }
-
         return routeToString;
     }
-
-    public int getStartOrientationVX() {return startOrientationVX;}
-
-    public int getStartOrientationVY() {return startOrientationVY;}
 }

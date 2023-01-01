@@ -1,4 +1,4 @@
-package PathFinding;
+package BackEnd.PathFinding;
 
 import java.util.ArrayList;
 
