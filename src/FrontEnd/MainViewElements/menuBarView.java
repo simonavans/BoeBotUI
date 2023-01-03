@@ -12,6 +12,10 @@ public class menuBarView {
 
     private MenuBar mainLayout;
 
+    private Menu objectMenu;
+    private Menu settingsMenu;
+    private Menu obstructionMenu;
+
     /**
      * Generates a menubar with options fo manipulating objects and settings.
      * @param callback class to which the method should callback
@@ -24,29 +28,61 @@ public class menuBarView {
         MenuItem menuDeleteObject = new MenuItem("Delete Object");
 
         // Create a menu for editing object properties and add the previously created submenus
-        Menu ObjectEditor = new Menu("Object Editor");
-        ObjectEditor.getItems().addAll(menuAddObject, menuEditObjects, menuDeleteObject);
+        this.objectMenu = new Menu("Object Editor");
+        objectMenu.getItems().addAll(menuAddObject, menuEditObjects, menuDeleteObject);
+
+        // Create three submenu items for adding obstructions, editing obstructions and deleting obstructions.
+        MenuItem menuAddObstruction = new MenuItem("Add Obstruction");
+        MenuItem menuEditOstruction = new MenuItem("Edit Obstruction");
+        MenuItem menuDeleteObstruction = new MenuItem("Delete Obstruction");
+
+        // Create a menu for editing obstruction properties and add the previously created submenus
+        this.obstructionMenu = new Menu("Obstruction Editor");
+        obstructionMenu.getItems().addAll(menuAddObstruction, menuEditOstruction, menuDeleteObstruction);
 
         // Create one submenu item for changing the settings on the robot.
-        MenuItem menuGeneralSettings = new MenuItem("General Settings");
+        MenuItem menuApplicationSettings = new MenuItem("Application Settings");
 
         // Create a menu for the settings and add the previously created submenu
-        Menu settingsMenu = new Menu("Settings");
-        settingsMenu.getItems().addAll(menuGeneralSettings);
+        this.settingsMenu = new Menu("Settings");
+        settingsMenu.getItems().addAll(menuApplicationSettings);
 
         // Create a new menubar and add the created menus to it.
         mainLayout = new MenuBar();
-        mainLayout.getMenus().add(ObjectEditor);
-        mainLayout.getMenus().add(settingsMenu);
+        mainLayout.getMenus().addAll(objectMenu, obstructionMenu, settingsMenu);
 
         // menu functionality
         menuAddObject.setOnAction(e -> callback.onObjectListEvent("Add"));
-
         menuEditObjects.setOnAction(e -> callback.onObjectListEvent("Edit"));
-
         menuDeleteObject.setOnAction(e -> callback.onObjectListEvent("Delete"));
 
-        menuGeneralSettings.setOnAction(e -> callback.onMenuBarEvent("General Settings"));
+        menuAddObstruction.setOnAction(e -> callback.onObstructionListEvent("Add"));
+        menuEditOstruction.setOnAction(e -> callback.onObstructionListEvent("Edit"));
+        menuDeleteObstruction.setOnAction(e -> callback.onObstructionListEvent("Delete"));
+
+        menuApplicationSettings.setOnAction(e -> callback.onMenuBarEvent("Application Settings"));
+    }
+
+    /**
+     * Disable the object and settings menu
+     *
+     * @author Kerr
+     */
+    public void disableMenus() {
+        objectMenu.setDisable(true);
+        obstructionMenu.setDisable(true);
+        settingsMenu.setDisable(true);
+    }
+
+    /**
+     * Enable the object and settings menu
+     *
+     * @author Kerr
+     */
+    public void enableMenus() {
+        objectMenu.setDisable(false);
+        obstructionMenu.setDisable(false);
+        settingsMenu.setDisable(false);
     }
 
     /**

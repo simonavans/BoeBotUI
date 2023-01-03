@@ -1,5 +1,6 @@
 package FrontEnd.dialogWindows;
 
+import BackEnd.Object;
 import FrontEnd.MainView;
 import javafx.event.ActionEvent;
 import javafx.scene.control.*;
@@ -12,12 +13,16 @@ public class SettingsView {
 
     public int gridWidth = 8;
     public int gridHeight = 8;
+
     public int boebotX = 0;
     public int boebotY = 0;
     public int boebotVX = 1;
     public int boebotVY = 0;
+
     public int turnWeight = 40;
     public int forwardWeight = 20;
+
+    public int comPort = 3;
 
     /**
      * Contructor for the settings class
@@ -54,18 +59,29 @@ public class SettingsView {
         // Create new Spinners
         Label boebotXLabel = new Label("Boebot Start X");
         Spinner<Integer> boebotXSpinner = new Spinner<>();
-        SpinnerValueFactory<Integer> valueFactoryBoebotX = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, gridWidth); //TODO make dynamic with grid size
+        SpinnerValueFactory.IntegerSpinnerValueFactory valueFactoryBoebotX = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, gridWidth - 1);
         valueFactoryBoebotX.setValue(boebotX);
         boebotXSpinner.setValueFactory(valueFactoryBoebotX);
 
+        gridWidthSpinner.valueProperty().addListener((observableValue, oldValue, newValue) -> {
+            valueFactoryBoebotX.setMax(newValue - 1);
+            boebotXSpinner.setValueFactory(valueFactoryBoebotX);
+        });
+
+
         Label boebotYLabel = new Label("Boebot Start Y");
         Spinner<Integer> boebotYSpinner = new Spinner<>();
-        SpinnerValueFactory<Integer> valueFactoryBoebotY = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, gridHeight); //TODO make dynamic with grid size
+        SpinnerValueFactory.IntegerSpinnerValueFactory valueFactoryBoebotY = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, gridHeight - 1);
         valueFactoryBoebotY.setValue(boebotY);
         boebotYSpinner.setValueFactory(valueFactoryBoebotY);
 
+        gridHeightSpinner.valueProperty().addListener((observableValue, oldValue, newValue) -> {
+            valueFactoryBoebotY.setMax(newValue - 1);
+            boebotXSpinner.setValueFactory(valueFactoryBoebotX);
+        });
+
         // Boebot orientation settings
-        Label boebotOrientationLabel = new Label("BoebotOrientation:");
+        Label boebotOrientationLabel = new Label("Boebot Orientation:");
 
         // Create new RadioButtons
         RadioButton boebotOrientationNorth = new RadioButton("North");
@@ -104,6 +120,13 @@ public class SettingsView {
         pathWeightCorner.valueProperty().addListener((observableValue, oldValue, newValue) ->
                 pathWeightCornerLabel.setText("Path Weight (Corner): " + newValue.intValue()));
 
+        // ComPort settings
+        // Create new Spinners
+        Label comPortLabel = new Label("Set COM Port");
+        Spinner<Integer> comPortSpinner = new Spinner<>();
+        SpinnerValueFactory<Integer> valueFactoryComPort = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 10);
+        valueFactoryComPort.setValue(comPort);
+        comPortSpinner.setValueFactory(valueFactoryComPort);
 
         // Create a new GridPane and add all the previously created settings to it.
         GridPane gridSettings = new GridPane();
@@ -126,6 +149,9 @@ public class SettingsView {
         gridSettings.add(boebotOrientationSouth, 0, 7);
         gridSettings.add(boebotOrientationWest, 0, 8);
 
+        gridSettings.add(comPortLabel, 0, 9);
+        gridSettings.add(comPortSpinner, 1, 9);
+
         // Create the main layout and add all the settings to it
         VBox mainLayout = new VBox();
         mainLayout.setSpacing(10);
@@ -135,7 +161,7 @@ public class SettingsView {
         Dialog dialog = new Dialog<>();
         dialog.setHeaderText(null);
         dialog.setGraphic(null);
-        dialog.setTitle("Settings");
+        dialog.setTitle("Application Settings");
 
         DialogPane dialogPane = dialog.getDialogPane();
         ButtonType OkayButton = new ButtonType("Confirm changes", ButtonBar.ButtonData.OK_DONE);
@@ -147,12 +173,20 @@ public class SettingsView {
         okButton.addEventFilter(ActionEvent.ACTION, event -> {
 
             // Check if illegal inputs are found
-            if (false) {
-//                Alert errorAlert = new Alert(Alert.AlertType.ERROR);
-//                errorAlert.setHeaderText(null);
-//                errorAlert.setContentText("There is already an objectList here!");
-//                errorAlert.showAndWait();
-//                event.consume();
+            boolean isValid = true;
+
+            for (Object existingObject : callback.getObjectListView().getObjectList()) {
+                if (boebotXSpinner.getValue() == existingObject.getLocationX() && boebotYSpinner.getValue() == existingObject.getLocationY()) {
+                    isValid = false;
+                }
+            }
+
+            if (!isValid) {
+                Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                errorAlert.setHeaderText(null);
+                errorAlert.setContentText("You cannot place the boebot on an object!");
+                errorAlert.showAndWait();
+                event.consume();
             } else {
                 this.gridWidth = gridWidthSpinner.getValue();
                 this.gridHeight = gridHeightSpinner.getValue();
@@ -179,6 +213,7 @@ public class SettingsView {
                 this.turnWeight = (int) pathWeightCorner.getValue();
                 this.forwardWeight = (int) pathWeightForward.getValue();
 
+                this.comPort = comPortSpinner.getValue();
                 callback.onSettingsEvent();
             }
         });

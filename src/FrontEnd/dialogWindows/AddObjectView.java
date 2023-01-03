@@ -10,8 +10,6 @@ import java.util.Objects;
 
 public class AddObjectView {
 
-    // TODO check if showAndWait causes problems like boebot.Wait
-
     /**
      * Opens a dialog box that allows the user to add an object (with location and destination)
      * @param callback class to which the method should callback
@@ -27,11 +25,13 @@ public class AddObjectView {
      *
      * @author Kerr
      */
+    @SuppressWarnings("Duplicates") //TODO Lots of duplicate code in this section, might be worth it to fix
     public static void addNodeDialog(MainView callback, Object object) {
 
         // Create four labels and Spinners for the location X and Y and destination X and Y. Set the ValueFactory for
         // the spinners. If the parameter index is not -1, an existing object is to be changed and the spinner value is
         // set to the current value of that object.
+
         Label locationXLabel = new Label("location (X):");
         Spinner<Integer> locationXSpinner = new Spinner<>();
         SpinnerValueFactory<Integer> valueFactoryLocationX = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, callback.getSettingsView().gridWidth - 1);
@@ -74,7 +74,13 @@ public class AddObjectView {
         Dialog dialog = new Dialog<>();
         dialog.setHeaderText(null);
         dialog.setGraphic(null);
-        dialog.setTitle("Add objectList");
+
+        if (Objects.isNull(object)) {
+            dialog.setTitle("Add object");
+        } else {
+            dialog.setTitle("Edit object");
+        }
+
 
         DialogPane dialogPane = dialog.getDialogPane();
         ButtonType OkayButton = new ButtonType("Okay", ButtonBar.ButtonData.OK_DONE);
@@ -83,7 +89,18 @@ public class AddObjectView {
 
         // Add button functionality
         Button okButton = (Button) dialog.getDialogPane().lookupButton(OkayButton);
-        okButton.addEventFilter(ActionEvent.ACTION, event -> callback.onAddObjectEvent(locationXSpinner.getValue(), locationYSpinner.getValue(), destinationXSpinner.getValue(), destinationYSpinner.getValue(), object));
+        okButton.addEventFilter(ActionEvent.ACTION, event -> {
+
+            boolean succeeded = callback.onAddObjectEvent(locationXSpinner.getValue(), locationYSpinner.getValue(), destinationXSpinner.getValue(), destinationYSpinner.getValue(), object);
+
+            if (!succeeded) {
+                Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                errorAlert.setHeaderText(null);
+                errorAlert.setContentText("Invalid locations given, please try again!");
+                errorAlert.showAndWait();
+                event.consume();
+            }
+        });
 
         // Show the dialog and wait until the user has pressed cancel or okay
         dialog.showAndWait();

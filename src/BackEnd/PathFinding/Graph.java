@@ -77,5 +77,4 @@ public abstract class Graph {
             node.resetNodeShortestPath();
         }
     }
-
 }

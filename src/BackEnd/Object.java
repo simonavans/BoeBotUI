@@ -12,7 +12,7 @@ public class Object {
     private int destinationY;
 
     /**
-     * Constructor of the data model class Object, used for the table view containing the list of objects or
+     * Constructor of the data model class Obstruction, used for the table view containing the list of objects or
      * obstructions
      * @param label The label of the given object, displayed in the GUI.
      * @param locationX The X coordinate of the location of the object.
@@ -30,18 +30,7 @@ public class Object {
         this.destinationY = destinationY;
     }
 
-    // TODO determine if setters are needed
     // Setters
-
-    /**
-     * Set the label of object
-     * @param label The label of the given object, displayed in the GUI.
-     *
-     * @author Kerr
-     */
-    public void setLabel(String label) {
-        this.label = label;
-    }
 
     /**
      * Set the X coordinate of object location

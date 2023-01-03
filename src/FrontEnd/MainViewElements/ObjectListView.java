@@ -21,6 +21,11 @@ public class ObjectListView {
     private ObservableList<Object> objectList = FXCollections.observableArrayList();
     private TableView<Object> objectTable;
 
+    private Button addButton;
+    private Button editButton;
+    private Button deleteButton;
+    private Button startRouteButton;
+
     /**
      * Constructor that generates a TableView with with a list of object locations and destinations together with
      * adding  add/edit/delete buttons for manipulating this data. Finally it adds a start route button,
@@ -33,10 +38,10 @@ public class ObjectListView {
     public ObjectListView(MainView callback) {
 
         // Create four buttons for adding, editing, deleting objects and starting a route
-        Button addButton = new Button("Add");
-        Button editButton = new Button("Edit");
-        Button deleteButton = new Button("Delete");
-        Button startRouteButton = new Button("Start Route");
+        this.addButton = new Button("Add");
+        this.editButton = new Button("Edit");
+        this.deleteButton = new Button("Delete");
+        this.startRouteButton = new Button("Start Route");
 
         // Add the three manipulation buttons to an HBox
         HBox buttonHBox = new HBox();
@@ -93,8 +98,37 @@ public class ObjectListView {
         startRouteButton.setOnAction(e -> callback.onObjectListEvent("Start Route"));
     }
 
+    /**
+     * Method that updates the ObjectListView when settings have changed (this will delete the entire list)
+     *
+     * @author Kerr
+     */
     public void updateObjectListView() {
         objectTable.getItems().clear();
+    }
+
+    /**
+     * Disable the add, edit, delete and start route buttons
+     *
+     * @author Kerr
+     */
+    public void disableButtons() {
+        addButton.setDisable(true);
+        editButton.setDisable(true);
+        deleteButton.setDisable(true);
+        startRouteButton.setDisable(true);
+    }
+
+    /**
+     * Enable the add, edit, delete and start route buttons
+     *
+     * @author Kerr
+     */
+    public void enableButtons() {
+        addButton.setDisable(false);
+        editButton.setDisable(false);
+        deleteButton.setDisable(false);
+        startRouteButton.setDisable(false);
     }
 
     // Getters

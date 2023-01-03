@@ -57,7 +57,7 @@ public class LegendView {
         Circle obstructionCircle = new Circle(0, 0, 15, Color.GRAY);
 
         // Create centered label for the circle symbol
-        Text obstructionLocationLabel = new Text("X");
+        Text obstructionLocationLabel = new Text("X0");
         obstructionLocationLabel.setFont(font);
         obstructionLocationLabel.setX(-obstructionLocationLabel.prefWidth(-1) / 2);
         obstructionLocationLabel.setY(0);

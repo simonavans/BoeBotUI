@@ -29,6 +29,8 @@ public class Grid extends Graph {
 
     /**
      * Method that updates the grid to the current size
+     *
+     * @author Kerr
      */
     public void updateGrid() {
         this.width = callback.getSettingsView().gridWidth;

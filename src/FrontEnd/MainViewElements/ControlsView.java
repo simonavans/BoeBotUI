@@ -14,8 +14,8 @@ public class ControlsView {
 
     /**
      * Generates a total of five buttons: forward, left and right (next to each other), toggle grabber and break.
-     *
      * @param callback class to which the method should callback
+     *
      * @author Kerr
      */
     public ControlsView(MainView callback) {
@@ -32,8 +32,8 @@ public class ControlsView {
         // alignment with other buttons.
         Button buttonForward = new Button("Forward");
         buttonForward.setMaxWidth(Double.MAX_VALUE);
-        Button buttonToggleGrabber = new Button("Toggle Grabber");
-        buttonToggleGrabber.setMaxWidth(Double.MAX_VALUE);
+        Button buttonPlaceObject = new Button("Place object");
+        buttonPlaceObject.setMaxWidth(Double.MAX_VALUE);
         Button buttonBreak = new Button("Break");
         buttonBreak.setMaxWidth(Double.MAX_VALUE);
 
@@ -42,20 +42,20 @@ public class ControlsView {
         mainLayout.setSpacing(10);
 
         // Add all buttons to the mainLayout
-        mainLayout.getChildren().addAll(buttonForward, turnControls, buttonToggleGrabber, buttonBreak);
+        mainLayout.getChildren().addAll(buttonForward, turnControls, buttonPlaceObject, buttonBreak);
 
         // Buttons functionality
         buttonForward.setOnAction(e -> callback.onManualControlEvent("Forward"));
         buttonTurnLeft.setOnAction(e -> callback.onManualControlEvent("Left"));
         buttonTurnRight.setOnAction(e -> callback.onManualControlEvent("Right"));
-        buttonToggleGrabber.setOnAction(e -> callback.onManualControlEvent("Toggle Grabber"));
+        buttonPlaceObject.setOnAction(e -> callback.onManualControlEvent("Place"));
         buttonBreak.setOnAction(e -> callback.onManualControlEvent("Break"));
     }
 
     /**
      * Getter method that returns the mainLayout, the layout containing all the buttons.
-     *
      * @return generated layout with five buttons for manual controls.
+     *
      * @author Kerr
      */
     public VBox getMainLayout() {return this.mainLayout; }

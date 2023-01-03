@@ -15,8 +15,6 @@ public class PathFinder {
 
     private int startX;
     private int startY;
-    private Node startNode;
-
     private int startOrientationVX;
     private int startOrientationVY;
 
@@ -38,21 +36,40 @@ public class PathFinder {
         updateWeights();
     }
 
+    /**
+     * Method that updates the grid to the current size.
+     *
+     * @author Kerr
+     */
     public void updateGrid() {
         this.grid = callback.getGrid();
     }
 
+    /**
+     * Method that updates the start location of the robot to the current location.
+     *
+     * @author Kerr
+     */
     public void updateStartLocation() {
         this.startX = callback.getSettingsView().boebotX;
         this.startY = callback.getSettingsView().boebotY;
-        this.startNode = grid.getNode(startX, startY);
     }
 
+    /**
+     * Method that updates the start orientation of the robot to the current orientation.
+     *
+     * @author Kerr
+     */
     public void updateStartOrientation() {
         this.startOrientationVX = callback.getSettingsView().boebotVX;
         this.startOrientationVY = callback.getSettingsView().boebotVY;
     }
 
+    /**
+     * Method that updates the weights of moving forward/turning to the current weights.
+     *
+     * @author Kerr
+     */
     public void updateWeights() {
         this.turnWeight = callback.getSettingsView().turnWeight;
         this.forwardWeight = callback.getSettingsView().forwardWeight;
@@ -93,12 +110,16 @@ public class PathFinder {
     /**
      * Getter method that returns the weight of making a corner.
      * @return the weight of making a corner.
+     *
+     * @author Kerr
      */
     public int getTurnWeight() {return turnWeight;}
 
     /**
      * Getter method that returns the weight of moving forward.
      * @return the weight of making moving forward.
+     *
+     * @author Kerr
      */
     public int getForwardWeight() { return forwardWeight;}
 
@@ -114,6 +135,10 @@ public class PathFinder {
      * @author Kerr
      */
     public ArrayList<Node> calculateShortestPathFromSource(int destinationX, int destinationY, boolean dropOff) {
+
+        // Get the node from which the robot starts
+        Node startNode = grid.getNode(startX, startY);
+
         // Reset residue from possible previous executions
         grid.resetNodeDistance();
         grid.resetNodeShortestPath();
@@ -158,9 +183,11 @@ public class PathFinder {
                 startOrientationVX = currentNode.getX() - previousNode.getX();
 
                 if (dropOff) {
-                    startNode = previousNode;
+                    startX = previousNode.getX();
+                    startY = previousNode.getY();
                 } else {
-                    startNode = destinationNode;
+                    startX = destinationX;
+                    startY = destinationY;
                 }
 
                 route.add(destinationNode);
@@ -281,26 +308,6 @@ public class PathFinder {
     }
 
     /**
-     * Helper method that determines based on two vectors if the robot moves left, right, backwards or forward
-     * @param vectors list of two vectors in the format {x1, y1, x2, y2}.
-     * @return Direction the robot moves in (L = left, R = right, F = forward, T = backward).
-     *
-     * @author Kerr
-     */
-    private String calculateDirection(int[] vectors) {
-        int dotProduct = (vectors[0] * vectors[2] + vectors[1] * vectors[3]);
-        int crossProduct = (vectors[0] * vectors[3] - vectors[1] * vectors[2]);
-
-        // If the dot product = 0, the vectors are at 90 degrees. The cross product then determines if the vectors are
-        // right handed (cross product = -1) or left handed (cross product = 1). If the dot product equals 1, the vectors
-        // are at 0 degrees. Else, the vectors are at 180 degrees.
-        if (dotProduct == 0 && crossProduct == -1 ) {return "R";}
-        if (dotProduct == 0 && crossProduct == 1) {return "L";}
-        if (dotProduct == 1) {return "F";}
-        return "T";
-    }
-
-    /**
      * convert a route (given as a list of nodes the robot passes) to a list of coordinates in the format {x, y}.
      * @param route a list of nodes the robot passes.
      * @return an ArrayList of arrays with coordinates the robot passes in the format {x, y}
@@ -316,8 +323,6 @@ public class PathFinder {
         return routeToInt;
     }
 
-    //TODO this method could be cleaned up a bit further (optional)
-
     /**
      * Convert a route (given as a list of nodes the robot passes) to a list of instructions in the format L = turn left,
      * R = turn right, F = move forward, P = place object here. Turning 180 degrees is defined as turing left twice.
@@ -330,24 +335,50 @@ public class PathFinder {
      * @author Kerr
      */
     public ArrayList<String> convertRouteToString(ArrayList<Node> route, int startOrientationVX, int startOrientationVY, boolean dropOff) {
+
+        // Set commands for moving forward, left, right and place
+        String forward = "F";
+        String left = "L";
+        String right = "R";
+        String place = "P";
+
         ArrayList<String> routeToString = new ArrayList<>();
 
         for (int i = 0; i < route.size() - 1; i++) {
-            String step = calculateDirection(calculateVectors(route.get(i), route.get(i + 1), startOrientationVX, startOrientationVY));
-            routeToString.add(step);
 
-            if (step.equals("L") || step.equals("R")) {
-                routeToString.add("F");
-            }
-            if (step.equals("T")) {
-                routeToString.add("L");
-                routeToString.add("L");
+            // determine the direction vectors for each step and calculate the cross and dot product
+            int[] vectors = calculateVectors(route.get(i), route.get(i + 1), startOrientationVX, startOrientationVY);
+            int dotProduct = (vectors[0] * vectors[2] + vectors[1] * vectors[3]);
+            int crossProduct = (vectors[0] * vectors[3] - vectors[1] * vectors[2]);
+
+            // If the dot product = 0, the vectors are at 90 degrees. The cross product then determines if the vectors are
+            // right handed (cross product = -1) or left handed (cross product = 1). If the dot product equals 1, the vectors
+            // are at 0 degrees. Else, the vectors are at 180 degrees.
+            if (dotProduct == 0 && crossProduct == -1) {
+
+                routeToString.add(right);
+                routeToString.add(forward);
+
+            } else if (dotProduct == 0 && crossProduct == 1) {
+
+                routeToString.add(left);
+                routeToString.add(forward);
+
+            } else if (dotProduct == 1) {
+
+                routeToString.add(forward);
+
+            } else {
+
+                routeToString.add(left);
+                routeToString.add(left);
+                routeToString.add(forward);
             }
         }
 
+        // If the robot has to drop an object of the last " is the "Place" command
         if (dropOff) {
-            routeToString.remove(routeToString.size() - 1);
-            routeToString.add("P");
+            routeToString.add(place);
         }
         return routeToString;
     }
