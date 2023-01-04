@@ -22,7 +22,7 @@ public class SettingsView {
     public int turnWeight = 40;
     public int forwardWeight = 20;
 
-    public int comPort = 3;
+    public int comPort = 8;
 
     /**
      * Contructor for the settings class
@@ -120,14 +120,6 @@ public class SettingsView {
         pathWeightCorner.valueProperty().addListener((observableValue, oldValue, newValue) ->
                 pathWeightCornerLabel.setText("Path Weight (Corner): " + newValue.intValue()));
 
-        // ComPort settings
-        // Create new Spinners
-        Label comPortLabel = new Label("Set COM Port");
-        Spinner<Integer> comPortSpinner = new Spinner<>();
-        SpinnerValueFactory<Integer> valueFactoryComPort = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 10);
-        valueFactoryComPort.setValue(comPort);
-        comPortSpinner.setValueFactory(valueFactoryComPort);
-
         // Create a new GridPane and add all the previously created settings to it.
         GridPane gridSettings = new GridPane();
         gridSettings.setHgap(15);
@@ -148,9 +140,6 @@ public class SettingsView {
         gridSettings.add(boebotOrientationEast, 0, 6);
         gridSettings.add(boebotOrientationSouth, 0, 7);
         gridSettings.add(boebotOrientationWest, 0, 8);
-
-        gridSettings.add(comPortLabel, 0, 9);
-        gridSettings.add(comPortSpinner, 1, 9);
 
         // Create the main layout and add all the settings to it
         VBox mainLayout = new VBox();
@@ -213,7 +202,6 @@ public class SettingsView {
                 this.turnWeight = (int) pathWeightCorner.getValue();
                 this.forwardWeight = (int) pathWeightForward.getValue();
 
-                this.comPort = comPortSpinner.getValue();
                 callback.onSettingsEvent();
             }
         });

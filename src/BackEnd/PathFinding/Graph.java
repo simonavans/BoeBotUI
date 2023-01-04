@@ -56,6 +56,18 @@ public abstract class Graph {
      */
     public void removeObstruction(int x, int y) {this.getNode(x, y).removeObstruction();}
 
+
+    /**
+     * Remove all obstructions on the grid
+     *
+     * @author Kerr
+     */
+    public void resetObstructions() {
+        for (Node node : nodes.values()) {
+            node.removeObstruction();
+        }
+    }
+
     /**
      * Reset the weight from all nodes to the start point in the graph.
      *

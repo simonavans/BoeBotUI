@@ -57,6 +57,7 @@ public class ObjectListView {
         TableColumn<Object, String> label = new TableColumn<>("Label");
         label.setPrefWidth(70);
         label.setCellValueFactory(new PropertyValueFactory<>("label"));
+        label.setSortType(TableColumn.SortType.ASCENDING);
 
         // Add a new TableColumn used by the location X and Y data and destination X and Y data
         TableColumn<Object, Integer> location = new TableColumn<>("Location");
@@ -83,6 +84,8 @@ public class ObjectListView {
         location.getColumns().addAll(locationX, locationY);
         destination.getColumns().addAll(destinationX, destinationY);
         objectTable.getColumns().addAll(label, location, destination);
+
+        objectTable.getSortOrder().add(label);
 
         // Add all the previously created elements to the mainView
         mainView.getChildren().addAll(objectTable, buttonHBox, startRouteButton);

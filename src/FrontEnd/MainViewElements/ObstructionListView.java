@@ -53,6 +53,8 @@ public class ObstructionListView {
         TableColumn<Obstruction, String> label = new TableColumn<>("Label");
         label.setPrefWidth(110);
         label.setCellValueFactory(new PropertyValueFactory<>("label"));
+        label.setSortType(TableColumn.SortType.ASCENDING);
+
 
         // Add a new TableColumn used by the location X and Y data
         TableColumn<Obstruction, Integer> location = new TableColumn<>("Location");
@@ -70,6 +72,7 @@ public class ObstructionListView {
         // Construct the TableView from the previously created columns
         location.getColumns().addAll(locationX, locationY);
         ObstructionTable.getColumns().addAll(label, location);
+        ObstructionTable.getSortOrder().add(label);
 
         // Add all the previously created elements to the mainView
         mainView.getChildren().addAll(ObstructionTable, buttonHBox);

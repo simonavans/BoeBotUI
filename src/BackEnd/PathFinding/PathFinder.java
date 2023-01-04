@@ -124,6 +124,42 @@ public class PathFinder {
     public int getForwardWeight() { return forwardWeight;}
 
     /**
+     * Setter method that sets the start X coordinate of the boebot.
+     * @param startX start X coordinate of the boebot.
+     *
+     * @author Kerr
+     */
+    public void setStartX(int startX) {
+        this.startX = startX;
+    }
+
+    /**
+     * Setter method that sets the start Y coordinate of the boebot.
+     * @param startY start Y coordinate of the boebot.
+     *
+     * @author Kerr
+     */
+    public void setStartY(int startY) {
+        this.startY = startY;
+    }
+
+    /**
+     * Setter method that sets the X component of the orientation vector of the boebot.
+     * @param startOrientationVX X component of the orientation vector of the boebot.
+     */
+    public void setStartOrientationVX(int startOrientationVX) {
+        this.startOrientationVX = startOrientationVX;
+    }
+
+    /**
+     * Setter method that sets the Y component of the orientation vector of the boebot.
+     * @param startOrientationVY Y component of the orientation vector of the boebot.
+     */
+    public void setStartOrientationVY(int startOrientationVY) {
+        this.startOrientationVY = startOrientationVY;
+    }
+
+    /**
      * Calculate the shortest route (the route that takes the leas amount of time to complete) between the robots
      * current location and its destination given by an x and y coordinate
      *

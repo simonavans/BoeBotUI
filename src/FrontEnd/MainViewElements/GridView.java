@@ -386,14 +386,22 @@ public class GridView {
      * @param objectList A list of objects with their location and destination
      * @author Kerr
      */
-    public void calculateRoute(ObservableList<Object> objectList, ObservableList<Obstruction> obstructionList) {
-        // Reset previously calculated path
-        routeToInt.clear();
-        routeToString.clear();
+    public boolean calculateRoute(ObservableList<Object> objectList, ObservableList<Obstruction> obstructionList) {
 
         // Configure pathfinder
         PathFinder pathFinder = callback.getPathfinder();
         Grid grid = callback.getGrid();
+
+        // Reset previously calculated path and grid
+        routeToInt.clear();
+        routeToString.clear();
+        grid.resetObstructions();
+
+        // Get initial start location and orientation in case finding a path fails
+        int initialX = pathFinder.getStartX();
+        int initialY = pathFinder.getStartY();
+        int initialVX = pathFinder.getStartOrientationVX();
+        int initialVY = pathFinder.getStartOrientationVY();
 
         ArrayList<int[][]> rearrangementList = new ArrayList<>();
 
@@ -425,6 +433,16 @@ public class GridView {
 
             // Calculate the route to the object location and remove the object from the grid
             ArrayList<Node> result1 = pathFinder.calculateShortestPathFromSource(destination[0][0], destination[0][1], false);
+
+            // Check if a path has been found, if not, return false
+            if (result1 == null) {
+                pathFinder.setStartX(initialX);
+                pathFinder.setStartY(initialY);
+                pathFinder.setStartOrientationVX(initialVX);
+                pathFinder.setStartOrientationVY(initialVY);
+                return false;
+            }
+
             grid.removeObstruction(destination[0][0], destination[0][1]);
 
             // Convert the calculated route to an list of Integers and to a list of strings
@@ -438,6 +456,16 @@ public class GridView {
 
             // Calculate the route to the object destination and add the object to the grid
             ArrayList<Node> result2 = pathFinder.calculateShortestPathFromSource(destination[1][0], destination[1][1], true);
+
+            // Check if a path has been found, if not, return false
+            if (result2 == null) {
+                pathFinder.setStartX(initialX);
+                pathFinder.setStartY(initialY);
+                pathFinder.setStartOrientationVX(initialVX);
+                pathFinder.setStartOrientationVY(initialVY);
+                return false;
+            }
+
             grid.addObstruction(destination[1][0], destination[1][1]);
 
             // Convert the calculated route to an list of Integers and to a list of strings
@@ -453,6 +481,8 @@ public class GridView {
         // Show the first route
         displayUntraversedRoute(0);
         displayUntraversedRoute(1);
+
+        return true;
     }
 
     /**
@@ -468,6 +498,14 @@ public class GridView {
             markUntraversed(Math.min(x1, x2), Math.min(y1, y2), Math.max(x1, x2), Math.max(y1, y2));
         }
     }
+
+    
+
+
+
+
+
+
 
 
     //TODO This needs a major cleanup
@@ -506,7 +544,6 @@ public class GridView {
             // If the routeNumber is not passed the last route, get the current instruction
             if (routeNumber != routeToString.size()) {
                 if (routeNumber == routeToString.size() - 1 && stepStringNumber == routeToString.get(routeNumber).size() - 1) {
-                    System.out.println("Hoi");
                     callback.onGridViewEvent("Finished Route");
                 }
 
@@ -533,10 +570,19 @@ public class GridView {
                                 Math.max(stepIntPrevious[0], stepIntNew[0]),
                                 Math.max(stepIntPrevious[1], stepIntNew[1]));
                         markBoeBotLocation(stepIntNew[0], stepIntNew[1]);
+
+                        // Change the location of the boebot in the settings
+                        callback.getSettingsView().boebotX = stepIntNew[0];
+                        callback.getSettingsView().boebotY = stepIntNew[1];
+
                         break;
                     case "P":
                         callback.onGridViewEvent("Place");
                         markBoeBotLocation(routeToInt.get(routeNumber).get(stepIntNumber - 1)[0], routeToInt.get(routeNumber).get(stepIntNumber - 1)[1]);
+
+                        // Change the location of the boebot in the settings
+                        callback.getSettingsView().boebotX = routeToInt.get(routeNumber).get(stepIntNumber - 1)[0];
+                        callback.getSettingsView().boebotY = routeToInt.get(routeNumber).get(stepIntNumber - 1)[1];
 
                         if (routeNumber == routeToString.size() - 1) {
                             resetLineSegments();

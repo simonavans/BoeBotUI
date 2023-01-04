@@ -9,11 +9,13 @@ import Callbacks.*;
 import FrontEnd.MainViewElements.*;
 import FrontEnd.dialogWindows.AddObjectView;
 import FrontEnd.dialogWindows.AddObstructionView;
+import FrontEnd.dialogWindows.SetComPortView;
 import FrontEnd.dialogWindows.SettingsView;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.TableView;
@@ -29,26 +31,24 @@ import java.util.Objects;
 
 //TODO must:
 // add textual updates (new class should be created)
+// -
 // what to do when user spams manual control buttons? (ControlsView)
 // fix bluetooth (BluetoothConnection)
-// Pathfinder does not remove objects after the route has been calculated
-// Give error when no path is found
 
 //TODO should:
-// fix table labels to be fully visible (object/Obstruction ListView)
-// fix that placing object does not check for boebot setting location, but for its current location
-// fix that object can get duplicate labels when new objects are added while there are 'gaps' between label numbers (due to .size method)
+// Fix close request on splash screen
 
 //TODO could:
 // Cleanup callback methods below
 // Cleanup displayNextStep() method in gridView
 // add boebot settings (settingsView, although probably a new class should be created)
-// Consider changing the format of the buttons and other elements (Application wide)
-// connect legend to GridView (GridView and LegendView)
+// Make it possible to have the user change the order of objects so the boebot picks them up in a different order
 // add path preview (gridView)
 // Make application somewhat resolution independent (GridView)
+// Consider changing the format of the buttons and other elements (Application wide)
+// connect legend to GridView (GridView and LegendView)
 
-public class MainView extends Application implements  ManualControlCallback, ObjectListCallback, addObjectCallback, ObstructionListCallback, addObstructionCallback, menuBarCallback, SettingsCallback, gridViewCallback {
+public class MainView extends Application implements  ManualControlCallback, ObjectListCallback, addObjectCallback, ObstructionListCallback, addObstructionCallback, menuBarCallback, SettingsCallback, gridViewCallback, bluetoothCallback {
 
     private SettingsView settingsView = new SettingsView(this);
 
@@ -68,6 +68,9 @@ public class MainView extends Application implements  ManualControlCallback, Obj
      * @author Kerr
      */
     public void start(Stage primaryStage) {
+
+        // Create an initial dialog to ask the user to select a COMPORT
+        SetComPortView comPortView = new SetComPortView(this);
 
         // Set window settings
         primaryStage.setTitle("BoeBot GUI");
@@ -148,7 +151,9 @@ public class MainView extends Application implements  ManualControlCallback, Obj
      *
      * @author Kerr
      */
-    public Grid getGrid() {return grid;}
+    public Grid getGrid() {
+        return grid;
+    }
 
 
     /**
@@ -157,7 +162,9 @@ public class MainView extends Application implements  ManualControlCallback, Obj
      *
      * @author Kerr
      */
-    public PathFinder getPathfinder() {return pathfinder;}
+    public PathFinder getPathfinder() {
+        return pathfinder;
+    }
 
     /**
      * Getter method that gets the settings used by the mainView
@@ -165,7 +172,9 @@ public class MainView extends Application implements  ManualControlCallback, Obj
      *
      * @author Kerr
      */
-    public SettingsView getSettingsView() {return settingsView;}
+    public SettingsView getSettingsView() {
+        return settingsView;
+    }
 
     /**
      * Getter method that gets the objectListView used by the mainView
@@ -173,15 +182,19 @@ public class MainView extends Application implements  ManualControlCallback, Obj
      *
      * @author Kerr
      */
-    public ObjectListView getObjectListView() {return objectListView;}
+    public ObjectListView getObjectListView() {
+        return objectListView;
+    }
 
     /**
-     * Getter method that gets the obstructionListView used by the mainView
-     * @return the obstructionListView used by the mainView
+     * Getter method that gets the bluetooth connection class used by the mainView
+     * @return bluetooth connection class used by the mainView
      *
      * @author Kerr
      */
-    public ObstructionListView getObstructionListView() {return  obstructionListView;}
+    public BluetoothConnection getBluetoothConnection() {
+        return bluetoothConnection;
+    }
 
 
     // CALLBACKS
@@ -190,82 +203,43 @@ public class MainView extends Application implements  ManualControlCallback, Obj
     // TODO don't allow boebot to crash into objects when giving instructions
     @Override
     public void onManualControlEvent(String command) {
+
+        // A switch statement is used instead of directly passing the command through to make it easier to change the
+        // command send over bluetooth without having to do this in the manualControlView
+
         switch (command) {
-            case "Forward": bluetoothConnection.sendManualControl("F");
+            case "Forward":
+                bluetoothConnection.sendManualControl("Forward");
                 break;
-            case "Left": bluetoothConnection.sendManualControl("L");
+            case "Left":
+                bluetoothConnection.sendManualControl("Left");
                 break;
-            case "Right": bluetoothConnection.sendManualControl("R");
+            case "Right":
+                bluetoothConnection.sendManualControl("Right");
                 break;
-            case "Toggle Grabber": bluetoothConnection.sendManualControl("P");
+            case "Place":
+                bluetoothConnection.sendManualControl("Place");
                 break;
-            case "Break": bluetoothConnection.sendManualControl("B");
+            case "Break":
+                bluetoothConnection.sendAutomaticControl("Break");
         }
     }
+
 
     @Override
-    public void onObjectListEvent(String command) {
-
-        TableView<Object> objectTable = objectListView.getObjectTable();
-
+    public void onBluetoothEvent(String command) {
+        System.out.println(command);
         switch (command) {
-            case "Add":
-                AddObjectView.addNodeDialog(this);
+            case "A":
+                gridView.displayNextStep();
                 break;
-            case "Edit":
-                if (objectTable.getSelectionModel().getSelectedIndices().size() != 0) {
-                    AddObjectView.addNodeDialog(this, objectTable.getItems().get(objectTable.getSelectionModel().getSelectedIndices().get(0)));
-                }
-                break;
-            case "Delete":
-                if (objectTable.getSelectionModel().getSelectedIndices().size() != 0) {
-                    int index = objectTable.getSelectionModel().getSelectedIndices().get(0);
-                    gridView.deletePointOfInterest(objectTable.getItems().get(index).getLocationX(), objectTable.getItems().get(index).getLocationY());
-                    gridView.deletePointOfInterest(objectTable.getItems().get(index).getDestinationX(), objectTable.getItems().get(index).getDestinationY());
-                    objectTable.getItems().remove(index);
-                }
-                break;
-            case "Start Route":
-                gridView.calculateRoute(objectListView.getObjectList(), obstructionListView.getObstructionList());
-                bluetoothConnection.sendRoute(gridView.getRouteToString());
-                objectListView.disableButtons();
-                menuBarView.disableMenus();
-                obstructionListView.disableButtons();
-        }
-    }
-
-    @Override
-    public void onObstructionListEvent(String command) {
-        TableView<Obstruction> obstructionTable = obstructionListView.getObstructionTable();
-
-        switch (command) {
-            case "Add":
-                AddObstructionView.addNodeDialog(this);
-                break;
-            case "Edit":
-                if (obstructionTable.getSelectionModel().getSelectedIndices().size() != 0) {
-                    AddObstructionView.addNodeDialog(this, obstructionTable.getItems().get(obstructionTable.getSelectionModel().getSelectedIndices().get(0)));
-                }
-                break;
-            case "Delete":
-                if (obstructionTable.getSelectionModel().getSelectedIndices().size() != 0) {
-                    int index = obstructionTable.getSelectionModel().getSelectedIndices().get(0);
-                    gridView.deletePointOfInterest(obstructionTable.getItems().get(index).getLocationX(), obstructionTable.getItems().get(index).getLocationY());
-                    obstructionTable.getItems().remove(index);
-                }
+            case "M":
+                bluetoothConnection.enableBluetooth();
+                System.out.println("Kan weer!");
                 break;
         }
     }
 
-    @Override
-    public void onMenuBarEvent(String command) {
-        // TODO I picked an switch statement since this allows for easy expandability, but currently this is not necessary
-        switch (command) {
-            case "Application Settings":
-                settingsView.settingsDialog();
-                break;
-        }
-    }
 
     @Override
     public void onSettingsEvent() {
@@ -294,10 +268,92 @@ public class MainView extends Application implements  ManualControlCallback, Obj
         if (settingsView.forwardWeight != pathfinder.getForwardWeight() || settingsView.turnWeight != pathfinder.getTurnWeight()) {
             pathfinder.updateWeights();
         }
+    }
 
-        // If the bluetooth comPort has changed
-        if(settingsView.comPort != bluetoothConnection.getComPortNumber()) {
-            bluetoothConnection.updateBluetoothConnection();
+
+    @Override
+    public void onMenuBarEvent(String command) {
+        // TODO I picked an switch statement since this allows for easy expandability, but currently this is not necessary
+        switch (command) {
+            case "Application Settings":
+                settingsView.settingsDialog();
+                break;
+        }
+    }
+
+
+
+
+
+
+
+    @Override
+    public void onObjectListEvent(String command) {
+
+        TableView<Object> objectTable = objectListView.getObjectTable();
+
+        switch (command) {
+            case "Add":
+                AddObjectView.addNodeDialog(this);
+                break;
+            case "Edit":
+                if (objectTable.getSelectionModel().getSelectedIndices().size() != 0) {
+                    AddObjectView.addNodeDialog(this, objectTable.getItems().get(objectTable.getSelectionModel().getSelectedIndices().get(0)));
+                }
+                break;
+            case "Delete":
+                if (objectTable.getSelectionModel().getSelectedIndices().size() != 0) {
+                    int index = objectTable.getSelectionModel().getSelectedIndices().get(0);
+                    gridView.deletePointOfInterest(objectTable.getItems().get(index).getLocationX(), objectTable.getItems().get(index).getLocationY());
+                    gridView.deletePointOfInterest(objectTable.getItems().get(index).getDestinationX(), objectTable.getItems().get(index).getDestinationY());
+                    objectTable.getItems().remove(index);
+                }
+                break;
+            case "Start Route":
+
+                if (objectTable.getItems().isEmpty()) {
+                    Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                    errorAlert.setHeaderText(null);
+                    errorAlert.setContentText("Please add objects to the object list!");
+                    errorAlert.showAndWait();
+                } else {
+
+                    boolean succeeded = gridView.calculateRoute(objectListView.getObjectList(), obstructionListView.getObstructionList());
+                    if (!succeeded) {
+                        Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                        errorAlert.setHeaderText(null);
+                        errorAlert.setContentText("No route was found, please verify the obstruction and object list!");
+                        errorAlert.showAndWait();
+                    } else {
+//                        bluetoothConnection.sendRoute(gridView.getRouteToString()); todo fix
+                        objectListView.disableButtons();
+                        menuBarView.disableMenus();
+                        obstructionListView.disableButtons();
+                    }
+                }
+        }
+    }
+
+    @Override
+    public void onObstructionListEvent(String command) {
+        TableView<Obstruction> obstructionTable = obstructionListView.getObstructionTable();
+
+        switch (command) {
+            case "Add":
+                AddObstructionView.addNodeDialog(this);
+                break;
+            case "Edit":
+                if (obstructionTable.getSelectionModel().getSelectedIndices().size() != 0) {
+                    AddObstructionView.addNodeDialog(this, obstructionTable.getItems().get(obstructionTable.getSelectionModel().getSelectedIndices().get(0)));
+                }
+                break;
+            case "Delete":
+                if (obstructionTable.getSelectionModel().getSelectedIndices().size() != 0) {
+                    int index = obstructionTable.getSelectionModel().getSelectedIndices().get(0);
+                    gridView.deletePointOfInterest(obstructionTable.getItems().get(index).getLocationX(), obstructionTable.getItems().get(index).getLocationY());
+                    obstructionTable.getItems().remove(index);
+                }
+                break;
         }
     }
 
@@ -315,7 +371,57 @@ public class MainView extends Application implements  ManualControlCallback, Obj
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     @Override
+    @SuppressWarnings("Duplicates") //See to do below for duplicate code
     public boolean onAddObjectEvent(int locationX, int locationY, int destinationX, int destinationY, Object object) {
         // Test if inputs are valid
 
@@ -353,7 +459,22 @@ public class MainView extends Application implements  ManualControlCallback, Obj
         if (Objects.isNull(object)) {
 
             // If the object is null, a new object is to be added
-            int objectNumber = objectListView.getObjectList().size() + 1;
+
+            // Determine the lowest value unique label for the object
+            ArrayList<String> labelList = new ArrayList<>();
+            for (Object item : objectListView.getObjectList()) {
+                labelList.add(item.getLabel().split(" ")[1]);
+            }
+
+            //TODO this code is duplicate
+            String objectNumber = "";
+            int i = 1;
+            while (objectNumber.equals("")) {
+                if (!labelList.contains(i + "")) {
+                    objectNumber = i + "";
+                }
+                i++;
+            }
 
             // Update the gridView
             gridView.markObjectLocation(locationX, locationY, objectNumber + "A");
@@ -381,6 +502,9 @@ public class MainView extends Application implements  ManualControlCallback, Obj
             object.setDestinationY(destinationY);
             objectListView.getObjectTable().refresh();
         }
+
+        objectListView.getObjectTable().sort();
+
         return true;
     }
 
@@ -400,6 +524,7 @@ public class MainView extends Application implements  ManualControlCallback, Obj
 
 
     @Override
+    @SuppressWarnings("Duplicates") //See to do below for duplicate code
     public boolean onAddObstructionEvent(int locationX, int locationY, Obstruction obstruction) {
         // Test if inputs are valid
 
@@ -428,7 +553,22 @@ public class MainView extends Application implements  ManualControlCallback, Obj
         if (Objects.isNull(obstruction)) {
 
             // If the obstruction is null, a new obstruction is to be added
-            int obstructionNumber = obstructionListView.getObstructionList().size() + 1;
+
+            // Determine the lowest value unique label for the object
+            ArrayList<String> labelList = new ArrayList<>();
+            for (Obstruction item : obstructionListView.getObstructionList()) {
+                labelList.add(item.getLabel().split(" ")[1]);
+            }
+
+            //TODO this code is duplicate
+            String obstructionNumber = "";
+            int i = 1;
+            while (obstructionNumber.equals("")) {
+                if (!labelList.contains(i + "")) {
+                    obstructionNumber = i + "";
+                }
+                i++;
+            }
 
             // Update the gridView
             gridView.markObstructionLocation(locationX, locationY, "X" + obstructionNumber);
@@ -450,16 +590,9 @@ public class MainView extends Application implements  ManualControlCallback, Obj
             obstruction.setLocationY(locationY);
             obstructionListView.getObstructionTable().refresh();
         }
+        obstructionListView.getObstructionTable().sort();
         return true;
     }
-
-
-
-
-
-
-
-
 
     //TODO this could be improved
     @Override
