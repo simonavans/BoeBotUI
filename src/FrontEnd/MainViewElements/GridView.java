@@ -22,6 +22,7 @@ import javafx.scene.text.Text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Class that controls layout and functionality of the grid view, like live location of the robot, location of objects,
@@ -42,12 +43,12 @@ public class GridView {
     private double gridEndPY; // End location of the grid on the y-axis (in pixels)
     private double gridStartPX; // Start location of the grid on the x-axis (in pixels)
 
-    private ArrayList<ArrayList<int[]>> routeToInt = new ArrayList<>();
-    private ArrayList<ArrayList<String>> routeToString = new ArrayList<>();
+    private ArrayList<int[]> routeToInt = new ArrayList<>();
+    private ArrayList<String> routeToString = new ArrayList<>();
 
-    private int stepStringNumber = 0;
-    private int stepIntNumber = 0;
-    private int routeNumber = 0;
+    private int stepNumberString = 0;
+    private int stepNumberInt = 0;
+    private int routeNumber = 1;
 
 
     private ImageView boebotImage = new ImageView(new Image("file:boebotOpen.png"));
@@ -63,6 +64,7 @@ public class GridView {
         updateGrid();
     }
 
+    //TODO docstring the methods below
     public void updateGrid() {
         int resolutionPX = 1000;
         int resolutionPY = 800;
@@ -70,8 +72,8 @@ public class GridView {
         int gridYShift = 250;
         int gridXShift = 590;
 
-        this.gridWidth = callback.getSettingsView().gridWidth;
-        this.gridHeight = callback.getSettingsView().gridHeight;
+        this.gridWidth = callback.getSettingsDialog().gridWidth;
+        this.gridHeight = callback.getSettingsDialog().gridHeight;
 
         if (gridWidth > gridHeight) {
             this.gridSquareSize = ((gridSize * resolutionPX / 100.0) / (double) (gridWidth - 1));
@@ -89,13 +91,13 @@ public class GridView {
     }
 
     public void updateBoebotLocation() {
-        markBoeBotLocation(callback.getSettingsView().boebotX, callback.getSettingsView().boebotY);
+        markBoeBotLocation(callback.getSettingsDialog().boebotX, callback.getSettingsDialog().boebotY);
         updateBoebotOrientation();
     }
 
     public void updateBoebotOrientation() {
-        int vx = callback.getSettingsView().boebotVX;
-        int vy = callback.getSettingsView().boebotVY;
+        int vx = callback.getSettingsDialog().boebotVX;
+        int vy = callback.getSettingsDialog().boebotVY;
 
         if (vx == 0 && vy == 1) {
             boebotImage.setRotate(0);
@@ -161,26 +163,6 @@ public class GridView {
      */
     public Pane getMainLayout() {
         return mainLayout;
-    }
-
-    /**
-     * Getter method that returns the calculated route (in string format)
-     * @return the calculated route (in string format).
-     *
-     * @author Kerr
-     */
-    public ArrayList<ArrayList<String>> getRouteToString() {
-        return routeToString;
-    }
-
-    /**
-     * Getter method that returns the calculated route (in integer format)
-     * @return the calculated route (in integer format)
-     *
-     * @author Kerr
-     */
-    public ArrayList<ArrayList<int[]>> getRouteToInt() {
-        return routeToInt;
     }
 
     /**
@@ -389,7 +371,7 @@ public class GridView {
     public boolean calculateRoute(ObservableList<Object> objectList, ObservableList<Obstruction> obstructionList) {
 
         // Configure pathfinder
-        PathFinder pathFinder = callback.getPathfinder();
+        PathFinder pathFinder = callback.getPathfinder(); //TODO does this really need to be called back like this?
         Grid grid = callback.getGrid();
 
         // Reset previously calculated path and grid
@@ -435,20 +417,17 @@ public class GridView {
             ArrayList<Node> result1 = pathFinder.calculateShortestPathFromSource(destination[0][0], destination[0][1], false);
 
             // Check if a path has been found, if not, return false
-            if (result1 == null) {
-                pathFinder.setStartX(initialX);
-                pathFinder.setStartY(initialY);
-                pathFinder.setStartOrientationVX(initialVX);
-                pathFinder.setStartOrientationVY(initialVY);
-                return false;
-            }
+            if (pathIsFound(pathFinder, initialX, initialY, initialVX, initialVY, result1)) return false;
 
             grid.removeObstruction(destination[0][0], destination[0][1]);
 
-            // Convert the calculated route to an list of Integers and to a list of strings
-            routeToInt.add(pathFinder.convertRouteToInt(result1));
-            routeToString.add(pathFinder.convertRouteToString(result1, startOrientationVX, startOrientationVY, false));
+            // Convert the calculated route to an list of Integers and to a list of strings and add them to the routeToInt and routeToString
 
+            routeToInt.addAll(pathFinder.convertRouteToInt(result1));
+            routeToString.addAll(pathFinder.convertRouteToString(result1, startOrientationVX, startOrientationVY));
+
+            // Since the first route is always to pickup an item, add the pickup command to the end the list of commands
+            routeToString.add("Pickup");
 
             // Get the start orientation of the robot
             startOrientationVX = pathFinder.getStartOrientationVX();
@@ -458,57 +437,88 @@ public class GridView {
             ArrayList<Node> result2 = pathFinder.calculateShortestPathFromSource(destination[1][0], destination[1][1], true);
 
             // Check if a path has been found, if not, return false
-            if (result2 == null) {
-                pathFinder.setStartX(initialX);
-                pathFinder.setStartY(initialY);
-                pathFinder.setStartOrientationVX(initialVX);
-                pathFinder.setStartOrientationVY(initialVY);
-                return false;
-            }
+            if (pathIsFound(pathFinder, initialX, initialY, initialVX, initialVY, result2)) return false;
 
             grid.addObstruction(destination[1][0], destination[1][1]);
 
-            // Convert the calculated route to an list of Integers and to a list of strings
-            routeToInt.add(pathFinder.convertRouteToInt(result2));
-            routeToString.add(pathFinder.convertRouteToString(result2, startOrientationVX, startOrientationVY, true));
+            // Convert the calculated route to an list of Integers and to a list of strings and add them to the routeToInt and routeToString
+            routeToInt.addAll(pathFinder.convertRouteToInt(result2));
+            routeToString.addAll(pathFinder.convertRouteToString(result2, startOrientationVX, startOrientationVY));
+
+            // Since the first route is always to pickup an item, add the pickup command to the end the list of commands
+            routeToString.add("Place");
+
         }
 
-        // Reset the routeNumber and stepStringNumber
-        routeNumber = 0;
-        stepStringNumber = 0;
-        stepIntNumber = 0;
+        // Reset the stepNumberString
+        stepNumberString = 0;
+        stepNumberInt = 0;
+        routeNumber = 1;
 
         // Show the first route
-        displayUntraversedRoute(0);
-        displayUntraversedRoute(1);
+        displayUntraversedRoute();
+        transmitNextStep();
 
         return true;
     }
 
     /**
-     * Helper method that marks a sub route as untraversed (marking the entire route red)
-     * @param routeNumberOffset the offset compared to the current routeNumber
+     * Helper method that checks if a path is found and if not, resets the start location and orientation of the robot
+     * @param pathFinder The pathfinder object used for the calculating the current route
+     * @param initialX the initial X location of the robot before starting the route
+     * @param initialY the initial Y location of the robot before starting the route
+     * @param initialVX the initial X component of the orientation vector of the robot before starting the route
+     * @param initialVY the initial Y component of the orientation vector of the robot before starting the route
+     * @param result the calculated route
+     *
+     * @return true = a route has been found or false = a route has not been found
      */
-    private void displayUntraversedRoute(int routeNumberOffset) {
-        for (int i = 0; i < routeToInt.get(routeNumber + routeNumberOffset).size() - 1; i++) {
-            int x1 = routeToInt.get(routeNumber + routeNumberOffset).get(i)[0];
-            int y1 = routeToInt.get(routeNumber + routeNumberOffset).get(i)[1];
-            int x2 = routeToInt.get(routeNumber + routeNumberOffset).get(i + 1)[0];
-            int y2 = routeToInt.get(routeNumber + routeNumberOffset).get(i + 1)[1];
+    private boolean pathIsFound(PathFinder pathFinder, int initialX, int initialY, int initialVX, int initialVY, ArrayList<Node> result) {
+        if (result == null) {
+            pathFinder.setStartX(initialX);
+            pathFinder.setStartY(initialY);
+            pathFinder.setStartOrientationVX(initialVX);
+            pathFinder.setStartOrientationVY(initialVY);
+            return true;
+        }
+        return false;
+    }
+
+
+    /**
+     * Helper method that gets the index of the nth occurrence of the value null in the routeToInt.
+     * @param n nth occurrence of the value null to search for
+     * @return index of the nth occurrence of the value null
+     */
+    private int getNthIndex(int n) {
+        for (int i = 0; i < routeToInt.size(); i++) {
+            if (routeToInt.get(i) == null) {
+                n--;
+                if (n == 0) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Helper method that marks a sub route as untraversed (marking the entire route red)
+     *
+     * @author Kerr
+     */
+    private void displayUntraversedRoute() {
+        resetLineSegments();
+        List<int[]> route = routeToInt.subList(stepNumberInt, getNthIndex(routeNumber));
+        for (int i = 0; i < route.size() - 1; i++) {
+            int x1 = route.get(i)[0];
+            int y1 = route.get(i)[1];
+            int x2 = route.get(i + 1)[0];
+            int y2 = route.get(i + 1)[1];
             markUntraversed(Math.min(x1, x2), Math.min(y1, y2), Math.max(x1, x2), Math.max(y1, y2));
         }
     }
 
-    
-
-
-
-
-
-
-
-
-    //TODO This needs a major cleanup
     /**
      * Method that draws the next step of the current route, moving or rotating the image of the boebot accordingly,
      * marking routes as traversed/untraversed and removing/replacing objects.
@@ -516,80 +526,100 @@ public class GridView {
      * @author Kerr
      */
     public void displayNextStep() {
-        boebotImage.toFront();
+        // If the not the entire route has been shown, show the next step
+        if (stepNumberString != routeToString.size()) {
+            String command = routeToString.get(stepNumberString);
 
-        // If all the routes are displayed, do not do anything
-        if (routeNumber != routeToString.size()) {
 
-            // if the current step is the last step AND this step is to Place ("P") the object AND this is not the last route, reset all line segments and show the next route
-            if (stepStringNumber == routeToString.get(routeNumber).size() - 1 && routeToString.get(routeNumber).get(routeToString.get(routeNumber).size() - 1).equals("P") && routeNumber != routeToString.size() -1) {
-                resetLineSegments();
-                displayUntraversedRoute(1);
-                displayUntraversedRoute(2);
-            }
-            // If the current step is the past the last step, test if the last step is NOT Place ("P"), then the step
-            // must be "pick up" (this has no official command) and the object location is to be removed. No matter what
-            // since this is the last step, the routeNumber needs to be increased and both step numbers are reset.
-            if (stepStringNumber == routeToString.get(routeNumber).size()) {
-
-                if (!routeToString.get(routeNumber).get(routeToString.get(routeNumber).size() - 1).equals("P")) {
-                    callback.onGridViewEvent("Pick Up");
-                }
-
+            if (command.equals("Pickup")) {
+                // If the current command is "Pickup", pick the object on the location of the boebot up
+                callback.onGridViewEvent("Pick Up");
+                stepNumberString++;
+                stepNumberInt += 2;
                 routeNumber++;
-                stepStringNumber = 0;
-                stepIntNumber = 0;
+
+                // Display the next route
+                displayUntraversedRoute();
+
+                // Update the command to the next step (2 steps further)
+                command = routeToString.get(stepNumberString);
             }
 
-            // If the routeNumber is not passed the last route, get the current instruction
-            if (routeNumber != routeToString.size()) {
-                if (routeNumber == routeToString.size() - 1 && stepStringNumber == routeToString.get(routeNumber).size() - 1) {
-                    callback.onGridViewEvent("Finished Route");
-                }
+            switch (command) {
+                case "Right" :
+                    // Rotate the boebot to the right
+                    rotateBoebot(-90);
+                    break;
 
-                String stepString = routeToString.get(routeNumber).get(stepStringNumber);
+                case "Left" :
+                    // Rotate the boebot to the left
+                    rotateBoebot(90);
+                    break;
 
-                // If the current instruction is to rotate right ("R") or to rotate left ("L") rotate the robot image
-                // If the instruction is to move forward ("F"), mark the next path as traversed and move the robot image
-                // If the instruction is to place an object ("P") add an obstruction on the place destination, remove
-                // the object from the object list and add it the obstruction list.
-                switch (stepString) {
-                    case "R":
-                        rotateBoebot(-90);
-                        break;
-                    case "L":
-                        rotateBoebot(90);
-                        break;
-                    case "F":
-                        stepIntNumber++;
-                        int[] stepIntNew = routeToInt.get(routeNumber).get(stepIntNumber);
-                        int[] stepIntPrevious = routeToInt.get(routeNumber).get(stepIntNumber - 1);
-                        markTraversed(
-                                Math.min(stepIntPrevious[0], stepIntNew[0]),
-                                Math.min(stepIntPrevious[1], stepIntNew[1]),
-                                Math.max(stepIntPrevious[0], stepIntNew[0]),
-                                Math.max(stepIntPrevious[1], stepIntNew[1]));
-                        markBoeBotLocation(stepIntNew[0], stepIntNew[1]);
+                case "Forward" :
+                    // Get the old and new location of the robot
+                    int[] oldLocation = routeToInt.get(stepNumberInt);
+                    int[] newLocation = routeToInt.get(stepNumberInt + 1);
 
-                        // Change the location of the boebot in the settings
-                        callback.getSettingsView().boebotX = stepIntNew[0];
-                        callback.getSettingsView().boebotY = stepIntNew[1];
+                    // Mark the line between the old and new location as traversed
+                    markTraversed(
+                            Math.min(newLocation[0], oldLocation[0]),
+                            Math.min(newLocation[1], oldLocation[1]),
+                            Math.max(newLocation[0], oldLocation[0]),
+                            Math.max(newLocation[1], oldLocation[1]));
 
-                        break;
-                    case "P":
-                        callback.onGridViewEvent("Place");
-                        markBoeBotLocation(routeToInt.get(routeNumber).get(stepIntNumber - 1)[0], routeToInt.get(routeNumber).get(stepIntNumber - 1)[1]);
+                    // Put the robot on the new location
+                    markBoeBotLocation(newLocation[0], newLocation[1]);
 
-                        // Change the location of the boebot in the settings
-                        callback.getSettingsView().boebotX = routeToInt.get(routeNumber).get(stepIntNumber - 1)[0];
-                        callback.getSettingsView().boebotY = routeToInt.get(routeNumber).get(stepIntNumber - 1)[1];
+                    // Change the location of the boebot in the settings
+                    callback.getSettingsDialog().boebotX = newLocation[0];
+                    callback.getSettingsDialog().boebotY = newLocation[1];
+                    stepNumberInt++;
+                    break;
 
-                        if (routeNumber == routeToString.size() - 1) {
-                            resetLineSegments();
-                        }
-                }
-                // If everything is done, add one to the stepString number
-                stepStringNumber++;
+                case "Place" :
+                    // If the current command is "Place", place the object on the location of the boebot
+                    callback.onGridViewEvent("Place");
+                    markBoeBotLocation(routeToInt.get(stepNumberInt - 1)[0], routeToInt.get(stepNumberInt - 1)[1]);
+
+                    // Change the location of the boebot in the settings
+                    callback.getSettingsDialog().boebotX = routeToInt.get(stepNumberInt - 1)[0];
+                    callback.getSettingsDialog().boebotY = routeToInt.get(stepNumberInt - 1)[1];
+
+                    stepNumberInt += 2;
+                    routeNumber++;
+
+                    if (stepNumberString != routeToString.size() - 1) {
+                        // If this is not the last route, display the next route
+                        displayUntraversedRoute();
+                    } else {
+                        // Else clear the GridView and enable menu items again
+                        resetLineSegments();
+                        callback.onGridViewEvent("Finished Route");
+                    }
+
+                    break;
+            }
+            stepNumberString++;
+            boebotImage.toFront();
+        }
+    }
+
+    /**
+     * Method that transmits the next step in the list of instructions to the robot
+     *
+     * @author Kerr
+     */
+    public void transmitNextStep() {
+        if (stepNumberString != routeToString.size()) {
+            String nextStep = routeToString.get(stepNumberString);
+
+            // If the current step is to pick an object up, skip this step (this step is only used internally and not
+            // by the boebot itself)
+            if (nextStep.equals("Pickup")) {
+                callback.onAutomaticControlEvent(routeToString.get(stepNumberString + 1));
+            } else {
+                callback.onAutomaticControlEvent(nextStep);
             }
         }
     }

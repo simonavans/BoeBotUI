@@ -1,7 +1,6 @@
-package FrontEnd.dialogWindows;
+package FrontEnd.DialogWindows;
 
 import FrontEnd.MainView;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
@@ -10,7 +9,7 @@ import jssc.SerialPortList;
 /**
  * Class that opens a window when the application launches asking the user to select a COMPORT
  */
-public class SetComPortView {
+public class SetComPortDialog {
 
     /**
      * Opens a dialog box that allows the user to set the comport for the bluetooth connection
@@ -18,7 +17,7 @@ public class SetComPortView {
      *
      * @author Kerr
      */
-    public SetComPortView(MainView callback) {
+    public SetComPortDialog(MainView callback) {
 
         // Get the available COMPORTS
         String[] portNames = SerialPortList.getPortNames();
@@ -57,7 +56,7 @@ public class SetComPortView {
                 errorAlert.showAndWait();
                 event.consume();
             } else {
-                callback.getSettingsView().comPort = Integer.parseInt(comboBox.getValue().charAt(comboBox.getValue().length() - 1) + "");
+                callback.getSettingsDialog().comPort = Integer.parseInt(comboBox.getValue().charAt(comboBox.getValue().length() - 1) + "");
                 if(!callback.getBluetoothConnection().openPort()) {
                     Alert errorAlert = new Alert(Alert.AlertType.ERROR);
                     errorAlert.setHeaderText(null);

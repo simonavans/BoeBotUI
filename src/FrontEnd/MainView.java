@@ -7,10 +7,10 @@ import BackEnd.PathFinding.Grid;
 import BackEnd.PathFinding.PathFinder;
 import Callbacks.*;
 import FrontEnd.MainViewElements.*;
-import FrontEnd.dialogWindows.AddObjectView;
-import FrontEnd.dialogWindows.AddObstructionView;
-import FrontEnd.dialogWindows.SetComPortView;
-import FrontEnd.dialogWindows.SettingsView;
+import FrontEnd.DialogWindows.AddObjectDialog;
+import FrontEnd.DialogWindows.AddObstructionDialog;
+import FrontEnd.DialogWindows.SetComPortDialog;
+import FrontEnd.DialogWindows.SettingsDialog;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -37,20 +37,21 @@ import java.util.Objects;
 
 //TODO should:
 // Fix close request on splash screen
+// Cleanup callback methods below
 
 //TODO could:
-// Cleanup callback methods below
-// Cleanup displayNextStep() method in gridView
-// add boebot settings (settingsView, although probably a new class should be created)
+// add boebot settings (settingsDialog, although probably a new class should be created)
 // Make it possible to have the user change the order of objects so the boebot picks them up in a different order
 // add path preview (gridView)
+
+//TODO extra:
 // Make application somewhat resolution independent (GridView)
 // Consider changing the format of the buttons and other elements (Application wide)
 // connect legend to GridView (GridView and LegendView)
 
-public class MainView extends Application implements  ManualControlCallback, ObjectListCallback, addObjectCallback, ObstructionListCallback, addObstructionCallback, menuBarCallback, SettingsCallback, gridViewCallback, bluetoothCallback {
+public class MainView extends Application implements ObjectListCallback, addObjectCallback, ObstructionListCallback, addObstructionCallback, menuBarCallback, SettingsCallback, gridViewCallback, bluetoothCallback {
 
-    private SettingsView settingsView = new SettingsView(this);
+    private SettingsDialog settingsDialog = new SettingsDialog(this);
 
     private menuBarView menuBarView = new menuBarView(this);
     private ObjectListView objectListView = new ObjectListView(this);
@@ -70,7 +71,7 @@ public class MainView extends Application implements  ManualControlCallback, Obj
     public void start(Stage primaryStage) {
 
         // Create an initial dialog to ask the user to select a COMPORT
-        SetComPortView comPortView = new SetComPortView(this);
+        SetComPortDialog comPortView = new SetComPortDialog(this);
 
         // Set window settings
         primaryStage.setTitle("BoeBot GUI");
@@ -129,18 +130,18 @@ public class MainView extends Application implements  ManualControlCallback, Obj
         mainView.setBottom(lineBottom);
 
         //TODO remove (used for debugging)
-        HBox hBox = new HBox();
-        Button nextRoute = new Button("Next route");
-        nextRoute.setOnAction(e -> gridView.displayNextStep());
-        Button nextStep = new Button("Next step");
-        nextStep.setOnAction(e -> gridView.displayNextStep());
-        hBox.getChildren().addAll(nextRoute, nextStep);
-        rightLayout.getChildren().addAll(hBox);
+        Button nextStep = new Button("Debug");
+        nextStep.setOnAction(e -> bluetoothConnection.sendAutomaticControl("bla"));
+        rightLayout.getChildren().addAll(nextStep);
 
         // Set the stage
         primaryStage.setScene(new Scene(mainView));
         primaryStage.setResizable(false);
         primaryStage.show();
+    }
+
+    public void stop() {
+        bluetoothConnection.closePort();
     }
 
     // Getters
@@ -172,8 +173,8 @@ public class MainView extends Application implements  ManualControlCallback, Obj
      *
      * @author Kerr
      */
-    public SettingsView getSettingsView() {
-        return settingsView;
+    public SettingsDialog getSettingsDialog() {
+        return settingsDialog;
     }
 
     /**
@@ -199,13 +200,137 @@ public class MainView extends Application implements  ManualControlCallback, Obj
 
     // CALLBACKS
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // TODO Make manual control buttons functional
     // TODO don't allow boebot to crash into objects when giving instructions
     @Override
     public void onManualControlEvent(String command) {
 
         // A switch statement is used instead of directly passing the command through to make it easier to change the
-        // command send over bluetooth without having to do this in the manualControlView
+        // command send over bluetooth without having to do this in the other classes of the application
 
         switch (command) {
             case "Forward":
@@ -220,23 +345,96 @@ public class MainView extends Application implements  ManualControlCallback, Obj
             case "Place":
                 bluetoothConnection.sendManualControl("Place");
                 break;
-            case "Break":
-                bluetoothConnection.sendAutomaticControl("Break");
+            case "Brake":
+                bluetoothConnection.sendAutomaticControl("Brake");
         }
     }
 
 
+    //TODO remove print statements
     @Override
-    public void onBluetoothEvent(String command) {
-        System.out.println(command);
+    // A switch statement is used instead of directly passing the command through to make it easier to change the
+    // command send over bluetooth without having to do this in the other classes of the application
+
+    public void onAutomaticControlEvent(String command) {
         switch (command) {
-            case "A":
+            case "Forward":
+                bluetoothConnection.sendAutomaticControl("Forward");
+                break;
+            case "Left":
+                bluetoothConnection.sendAutomaticControl("Left");
+                break;
+            case "Right":
+                bluetoothConnection.sendAutomaticControl("Right");
+                break;
+            case "Place":
+                bluetoothConnection.sendAutomaticControl("Place");
+                break;
+        }
+    }
+
+    @Override
+    public void onBluetoothReceiveEvent(String command) {
+        System.out.println(command);
+        String shortenedCommand = command.split(" ")[0] + " " + command.split(" ")[1];
+        System.out.println(shortenedCommand);
+
+        switch (shortenedCommand) {
+            case "Boebot: Succeeded":
                 gridView.displayNextStep();
+                gridView.transmitNextStep();
                 break;
-            case "M":
-                bluetoothConnection.enableBluetooth();
-                System.out.println("Kan weer!");
+            case "Boebot: Failed": // TODO see if this one is required
                 break;
+            case "Boebot: Opened": // TODO see if this one is required
+                break;
+            case "Boebot: Closed": // TODO see if this one is required
+                break;
+            case "Boebot: Object":
+                //TODO add a method (probably to the resume part) that remembers if the boebot was
+                // holding an object when stopping and where it should stand so when resuming the pathfinder can first place this
+                // object before continuing
+                int x = Integer.parseInt(command.split(" ")[2].charAt(1) + "");
+                int y = Integer.parseInt(command.split(" ")[2].charAt(3) + "");
+
+                boolean isUnknownObject = true;
+
+                for (Object object : objectListView.getObjectList()) {
+                    if (x == object.getLocationX() && y == object.getDestinationY()) {
+                        isUnknownObject = false;
+                    }
+                }
+
+                for (Obstruction obstruction : obstructionListView.getObstructionList()) {
+                    if (x == obstruction.getLocationX() && y == obstruction.getLocationY())
+                        isUnknownObject = false;
+                }
+
+                if (isUnknownObject) {
+                    onManualControlEvent("Brake");
+                    onAddObstructionEvent(x, y, null);
+                    Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                    errorAlert.setHeaderText(null);
+                    errorAlert.setContentText("An unknown object was found at (" + x + ", " + y + "), the boebot has stopped.\nPlease press RESUME to continue.");
+                    errorAlert.showAndWait();
+                }
+
+                break;
+            case "Boebot: Brake":
+                break;
+            case "Remote: Forward":
+                break;
+            case "Remote: Left":
+                break;
+            case "Remote: Right":
+                break;
+            case "Remote: Place":
+                break;
+            case "Remote: Brake":
+                break;
+            case "Remote: Resume":
+                break;
+
         }
     }
 
@@ -244,7 +442,7 @@ public class MainView extends Application implements  ManualControlCallback, Obj
     @Override
     public void onSettingsEvent() {
         // If the grid size has changed
-        if (settingsView.gridHeight != gridView.getGridHeight() || settingsView.gridWidth != gridView.getGridWidth()) {
+        if (settingsDialog.gridHeight != gridView.getGridHeight() || settingsDialog.gridWidth != gridView.getGridWidth()) {
             gridView.updateGrid();
             grid.updateGrid();
             pathfinder.updateGrid();
@@ -253,19 +451,19 @@ public class MainView extends Application implements  ManualControlCallback, Obj
         }
 
         // If the boebot location has changed
-        if (settingsView.boebotX != pathfinder.getStartX() || settingsView.boebotY != pathfinder.getStartY()) {
+        if (settingsDialog.boebotX != pathfinder.getStartX() || settingsDialog.boebotY != pathfinder.getStartY()) {
             gridView.updateBoebotLocation();
             pathfinder.updateStartLocation();
         }
 
         // If the boebot orientation has changed
-        if (settingsView.boebotVY != pathfinder.getStartOrientationVY() || settingsView.boebotVX != pathfinder.getStartOrientationVX()) {
+        if (settingsDialog.boebotVY != pathfinder.getStartOrientationVY() || settingsDialog.boebotVX != pathfinder.getStartOrientationVX()) {
             gridView.updateBoebotOrientation();
             pathfinder.updateStartOrientation();
         }
 
         // If the pathfinder Weights have changed
-        if (settingsView.forwardWeight != pathfinder.getForwardWeight() || settingsView.turnWeight != pathfinder.getTurnWeight()) {
+        if (settingsDialog.forwardWeight != pathfinder.getForwardWeight() || settingsDialog.turnWeight != pathfinder.getTurnWeight()) {
             pathfinder.updateWeights();
         }
     }
@@ -276,7 +474,7 @@ public class MainView extends Application implements  ManualControlCallback, Obj
         // TODO I picked an switch statement since this allows for easy expandability, but currently this is not necessary
         switch (command) {
             case "Application Settings":
-                settingsView.settingsDialog();
+                settingsDialog.settingsDialog();
                 break;
         }
     }
@@ -294,11 +492,11 @@ public class MainView extends Application implements  ManualControlCallback, Obj
 
         switch (command) {
             case "Add":
-                AddObjectView.addNodeDialog(this);
+                AddObjectDialog.addNodeDialog(this);
                 break;
             case "Edit":
                 if (objectTable.getSelectionModel().getSelectedIndices().size() != 0) {
-                    AddObjectView.addNodeDialog(this, objectTable.getItems().get(objectTable.getSelectionModel().getSelectedIndices().get(0)));
+                    AddObjectDialog.addNodeDialog(this, objectTable.getItems().get(objectTable.getSelectionModel().getSelectedIndices().get(0)));
                 }
                 break;
             case "Delete":
@@ -340,11 +538,11 @@ public class MainView extends Application implements  ManualControlCallback, Obj
 
         switch (command) {
             case "Add":
-                AddObstructionView.addNodeDialog(this);
+                AddObstructionDialog.addNodeDialog(this);
                 break;
             case "Edit":
                 if (obstructionTable.getSelectionModel().getSelectedIndices().size() != 0) {
-                    AddObstructionView.addNodeDialog(this, obstructionTable.getItems().get(obstructionTable.getSelectionModel().getSelectedIndices().get(0)));
+                    AddObstructionDialog.addNodeDialog(this, obstructionTable.getItems().get(obstructionTable.getSelectionModel().getSelectedIndices().get(0)));
                 }
                 break;
             case "Delete":
@@ -429,7 +627,7 @@ public class MainView extends Application implements  ManualControlCallback, Obj
         if (locationX == destinationX && locationY == destinationY) {return false;}
 
         // Test if location is the same as boebot location
-        if (locationX == settingsView.boebotX && locationY == settingsView.boebotY) {return false;}
+        if (locationX == settingsDialog.boebotX && locationY == settingsDialog.boebotY) {return false;}
 
         // Test if destination or location are the same as another object
         for (Object existingObject : objectListView.getObjectList()) {
@@ -509,7 +707,7 @@ public class MainView extends Application implements  ManualControlCallback, Obj
     }
 
     // TODO not super happy about converting an obstruction to an object and the list of if statements is inconsistent
-    //  with the settingsView (for the settings it is handled in the class, for the objectsViews in the callback)
+    //  with the settingsDialog (for the settings it is handled in the class, for the objectsViews in the callback)
 
     @Override
     public boolean onAddObjectEvent(int locationX, int locationY, int destinationX, int destinationY, Obstruction obstruction) {
@@ -529,7 +727,7 @@ public class MainView extends Application implements  ManualControlCallback, Obj
         // Test if inputs are valid
 
         // Test if location is the same as boebot location
-        if (locationX == settingsView.boebotX && locationY == settingsView.boebotY) {return false;}
+        if (locationX == settingsDialog.boebotX && locationY == settingsDialog.boebotY) {return false;}
 
         // Test if the location location is the same as another obstruction
         for (Obstruction existingObstruction : obstructionListView.getObstructionList()) {

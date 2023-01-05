@@ -34,7 +34,7 @@ public class ControlsView {
         buttonForward.setMaxWidth(Double.MAX_VALUE);
         Button buttonPlaceObject = new Button("Place object");
         buttonPlaceObject.setMaxWidth(Double.MAX_VALUE);
-        Button buttonBreak = new Button("Break");
+        Button buttonBreak = new Button("Brake");
         buttonBreak.setMaxWidth(Double.MAX_VALUE);
 
         // Set basic format of the main Layout
@@ -49,7 +49,7 @@ public class ControlsView {
         buttonTurnLeft.setOnAction(e -> callback.onManualControlEvent("Left"));
         buttonTurnRight.setOnAction(e -> callback.onManualControlEvent("Right"));
         buttonPlaceObject.setOnAction(e -> callback.onManualControlEvent("Place"));
-        buttonBreak.setOnAction(e -> callback.onManualControlEvent("Break"));
+        buttonBreak.setOnAction(e -> callback.onManualControlEvent("Brake"));
     }
 
     /**

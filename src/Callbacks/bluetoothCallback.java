@@ -1,5 +1,7 @@
 package Callbacks;
 
 public interface bluetoothCallback {
-    void onBluetoothEvent(String command);
+    void onAutomaticControlEvent(String command);
+    void onManualControlEvent(String command);
+    void onBluetoothReceiveEvent(String command);
 }

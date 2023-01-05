@@ -33,8 +33,8 @@ public class Grid extends Graph {
      * @author Kerr
      */
     public void updateGrid() {
-        this.width = callback.getSettingsView().gridWidth;
-        this.height = callback.getSettingsView().gridHeight;
+        this.width = callback.getSettingsDialog().gridWidth;
+        this.height = callback.getSettingsDialog().gridHeight;
 
         super.getGraphNodes().clear();
         generateGrid();

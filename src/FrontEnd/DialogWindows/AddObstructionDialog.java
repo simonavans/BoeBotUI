@@ -1,4 +1,4 @@
-package FrontEnd.dialogWindows;
+package FrontEnd.DialogWindows;
 
 import BackEnd.Obstruction;
 import FrontEnd.MainView;
@@ -8,7 +8,7 @@ import javafx.scene.layout.GridPane;
 
 import java.util.Objects;
 
-public class AddObstructionView {
+public class AddObstructionDialog {
 
     /**
      * Opens a dialog box that allows the user to add an Obstruction (with location)
@@ -33,13 +33,13 @@ public class AddObstructionView {
         // set to the current value of that obstruction.
         Label locationXLabel = new Label("location (X):");
         Spinner<Integer> locationXSpinner = new Spinner<>();
-        SpinnerValueFactory<Integer> valueFactoryLocationX = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, callback.getSettingsView().gridWidth - 1);
+        SpinnerValueFactory<Integer> valueFactoryLocationX = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, callback.getSettingsDialog().gridWidth - 1);
         valueFactoryLocationX.setValue((Objects.isNull(obstruction)) ? 0 : obstruction.getLocationX());
         locationXSpinner.setValueFactory(valueFactoryLocationX);
 
         Label locationYLabel = new Label("location (Y):");
         Spinner<Integer> locationYSpinner = new Spinner<>();
-        SpinnerValueFactory<Integer> valueFactoryLocationY = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, callback.getSettingsView().gridHeight - 1);
+        SpinnerValueFactory<Integer> valueFactoryLocationY = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, callback.getSettingsDialog().gridHeight - 1);
         valueFactoryLocationY.setValue((Objects.isNull(obstruction)) ? 0 : obstruction.getLocationY());
         locationYSpinner.setValueFactory(valueFactoryLocationY);
 
@@ -67,7 +67,7 @@ public class AddObstructionView {
         Label destinationXLabel = new Label("destination (X):");
         destinationXLabel.setDisable(true);
         Spinner<Integer> destinationXSpinner = new Spinner<>();
-        SpinnerValueFactory<Integer> valueFactoryDestinationX = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, callback.getSettingsView().gridWidth - 1);
+        SpinnerValueFactory<Integer> valueFactoryDestinationX = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, callback.getSettingsDialog().gridWidth - 1);
         valueFactoryDestinationX.setValue((0));
         destinationXSpinner.setValueFactory(valueFactoryDestinationX);
         destinationXSpinner.setDisable(true);
@@ -75,7 +75,7 @@ public class AddObstructionView {
         Label destinationYLabel = new Label("location (Y):");
         destinationYLabel.setDisable(true);
         Spinner<Integer> destinationYSpinner = new Spinner<>();
-        SpinnerValueFactory<Integer> valueFactoryDestinationY = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, callback.getSettingsView().gridHeight - 1);
+        SpinnerValueFactory<Integer> valueFactoryDestinationY = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, callback.getSettingsDialog().gridHeight - 1);
         valueFactoryDestinationY.setValue((0));
         destinationYSpinner.setValueFactory(valueFactoryDestinationY);
         destinationYSpinner.setDisable(true);

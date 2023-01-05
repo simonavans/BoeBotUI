@@ -51,8 +51,8 @@ public class PathFinder {
      * @author Kerr
      */
     public void updateStartLocation() {
-        this.startX = callback.getSettingsView().boebotX;
-        this.startY = callback.getSettingsView().boebotY;
+        this.startX = callback.getSettingsDialog().boebotX;
+        this.startY = callback.getSettingsDialog().boebotY;
     }
 
     /**
@@ -61,8 +61,8 @@ public class PathFinder {
      * @author Kerr
      */
     public void updateStartOrientation() {
-        this.startOrientationVX = callback.getSettingsView().boebotVX;
-        this.startOrientationVY = callback.getSettingsView().boebotVY;
+        this.startOrientationVX = callback.getSettingsDialog().boebotVX;
+        this.startOrientationVY = callback.getSettingsDialog().boebotVY;
     }
 
     /**
@@ -71,8 +71,8 @@ public class PathFinder {
      * @author Kerr
      */
     public void updateWeights() {
-        this.turnWeight = callback.getSettingsView().turnWeight;
-        this.forwardWeight = callback.getSettingsView().forwardWeight;
+        this.turnWeight = callback.getSettingsDialog().turnWeight;
+        this.forwardWeight = callback.getSettingsDialog().forwardWeight;
     }
 
     /**
@@ -165,6 +165,8 @@ public class PathFinder {
      *
      * @param destinationX the x coordinate of the destination
      * @param destinationY the y coordinate of the destination
+     * @param dropOff tell the Pathfinder if it concerns a route to drop an object of or not. False makes it behave more
+     * like a traditional pathfinder
      * @return an ArrayList with Strings which guide the robot through the shortest route. If no route is found
      * (meaning the destination is unreachable), return null
      *
@@ -218,7 +220,7 @@ public class PathFinder {
                 startOrientationVY = currentNode.getY() - previousNode.getY();
                 startOrientationVX = currentNode.getX() - previousNode.getX();
 
-                if (dropOff) {
+                if (dropOff) { //TODO I do not fully agree with having this logic in this method, this could also be placed in the gridView
                     startX = previousNode.getX();
                     startY = previousNode.getY();
                 } else {
@@ -282,28 +284,28 @@ public class PathFinder {
     }
 
     /**
-     * Helper method that calculates the angle of the path between two given nodes, based on the orientation of the
-     * robot.
+     * Helper method that returns an array of integers representing the direction vectors of the route before and after
+     * driving between two nodes. based on the start orientation of the robot.
      *
      * @param currentNode the current location of the robot
      * @param destinationNode the location of an node adjacent to the current node
-     * @return the angle of the path between the two given nodes
+     * @return an array of integers representing the direction vectors of the route before and after riving between two nodes.
      *
      * @author Kerr
      */
-    private int[] calculateVectors(Node currentNode, Node destinationNode) {
+    private int[] calculateVectors(Node currentNode, Node destinationNode) { // TODO consider changing this logic
         return calculateVectors(currentNode, destinationNode, startOrientationVX, startOrientationVY);
     }
 
     /**
-     * Helper method that calculates the angle of the path between two given nodes, based on the orientation of the
-     * robot.
+     * Helper method that returns an array of integers representing the direction vectors of the route before and after
+     * driving between two nodes. based on the start orientation of the robot.
      *
      * @param currentNode the current location of the robot
      * @param destinationNode the location of an node adjacent to the current node
      * @param startOrientationVX X component of the start orientation of the robot
      * @param startOrientationVY Y component of the start orientation of the robot
-     * @return the angle of the path between the two given nodes
+     * @return an array of integers representing the direction vectors of the route before and after riving between two nodes.
      *
      * @author Kerr
      */
@@ -353,30 +355,34 @@ public class PathFinder {
     public ArrayList<int[]> convertRouteToInt(ArrayList<Node> route) {
         ArrayList<int[]> routeToInt = new ArrayList<>();
 
+        // For every step in the route, construct an array in the format {x, y}
         for (Node node : route) {
             routeToInt.add(new int[]{node.getX(), node.getY()});
         }
+
+        // Add null to the end to signify the end of a route
+        routeToInt.add(null);
+
         return routeToInt;
     }
 
     /**
-     * Convert a route (given as a list of nodes the robot passes) to a list of instructions in the format L = turn left,
-     * R = turn right, F = move forward, P = place object here. Turning 180 degrees is defined as turing left twice.
+     * Convert a route (given as a list of nodes the robot passes) to a list of instructions in the format
+     * Left = turn left, Right = turn right, Forward = move forward
+     * Turning 180 degrees is defined as turing left twice.
      * @param route a list of nodes the robot passes.
      * @param startOrientationVX X component of the orientation vector of the robot.
      * @param startOrientationVY Y component of the orientation vector of the robot.
-     * @param dropOff true = route is to drop an object off, false = route is to pick an object up.
      * @return a list of instructions.
      *
      * @author Kerr
      */
-    public ArrayList<String> convertRouteToString(ArrayList<Node> route, int startOrientationVX, int startOrientationVY, boolean dropOff) {
+    public ArrayList<String> convertRouteToString(ArrayList<Node> route, int startOrientationVX, int startOrientationVY) {
 
         // Set commands for moving forward, left, right and place
-        String forward = "F";
-        String left = "L";
-        String right = "R";
-        String place = "P";
+        String forward = "Forward";
+        String left = "Left";
+        String right = "Right";
 
         ArrayList<String> routeToString = new ArrayList<>();
 
@@ -410,11 +416,6 @@ public class PathFinder {
                 routeToString.add(left);
                 routeToString.add(forward);
             }
-        }
-
-        // If the robot has to drop an object of the last " is the "Place" command
-        if (dropOff) {
-            routeToString.add(place);
         }
         return routeToString;
     }

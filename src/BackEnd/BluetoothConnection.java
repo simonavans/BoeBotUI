@@ -1,8 +1,8 @@
 package BackEnd;
 
 import FrontEnd.MainView;
+import javafx.application.Platform;
 import jssc.*;
-
 
 /**
  * Class that controls the bluetooth connection with the boebot
@@ -35,21 +35,37 @@ public class BluetoothConnection {
      */
     public boolean openPort() {
 
-        this.serialPort = new SerialPort("COM" + callback.getSettingsView().comPort);
+        this.serialPort = new SerialPort("COM" + callback.getSettingsDialog().comPort);
 
         try {
-            serialPort.openPort(); // Open the serial connection
+            // Open the serial connection
+            serialPort.openPort();
 
+            // Configure the bluetooth connection
             serialPort.setParams(SerialPort.BAUDRATE_115200,
                     SerialPort.DATABITS_8,
                     SerialPort.STOPBITS_1,
                     SerialPort.PARITY_NONE);
 
+            // Add an event listeners that checks for an incoming signal
             serialPort.addEventListener(new PortReader(), SerialPort.MASK_RXCHAR);
         } catch (SerialPortException e) {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Method that closes the bluetooth connection.
+     *
+     * @author Kerr
+     */
+    public void closePort() {
+        try {
+            serialPort.closePort();
+        } catch (SerialPortException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -94,7 +110,7 @@ public class BluetoothConnection {
      */
     private void sendCommand(String command) {
             try {
-                serialPort.writeString("Manual " + command);
+                serialPort.writeString(command);
             } catch (SerialPortException e) {
                 e.printStackTrace();
             }
@@ -104,13 +120,26 @@ public class BluetoothConnection {
 
     /**
      * Method that only passes on a command once the entire command has been send (the end of an command is marked by *)
+     *
+     * @author Kerr
      */
     private void receiveCommand() {
-        if(receivedCommand.contains("*")) {callback.onBluetoothEvent(receivedCommand.substring(0, receivedCommand.length() - 1));}
+        // For as long as the received command does not contain a *, do not do anything. Else, send the command to the callback
+        if(receivedCommand.contains("*")) {
+            callback.onBluetoothReceiveEvent(receivedCommand.substring(0, receivedCommand.length() - 1));
+
+            // Clear the command
+            receivedCommand = "";
+        }
     }
 
     /**
-     * helper class that interprets an incoming bluetooth signal
+     * helper class that interprets an incoming bluetooth signal. Made with the help of:
+     * https://www.codeproject.com/Tips/801262/Sending-and-receiving-strings-from-COM-port-via-j
+     * and
+     * https://stackoverflow.com/questions/17850191/why-am-i-getting-java-lang-illegalstateexception-not-on-fx-application-thread
+     *
+     * @author Kerr
      */
     private class PortReader implements SerialPortEventListener {
 
@@ -120,7 +149,7 @@ public class BluetoothConnection {
                 try {
                     String receivedData = serialPort.readString(event.getEventValue());
                     receivedCommand += receivedData;
-                    receiveCommand();
+                    Platform.runLater(BluetoothConnection.this::receiveCommand);
                 } catch (SerialPortException ex) {
                     System.out.println("Error in receiving string from COM-port: " + ex);
                 }

@@ -1,4 +1,4 @@
-package FrontEnd.dialogWindows;
+package FrontEnd.DialogWindows;
 
 import BackEnd.Object;
 import FrontEnd.MainView;
@@ -7,7 +7,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 
-public class SettingsView {
+public class SettingsDialog {
 
     private MainView callback;
 
@@ -30,7 +30,7 @@ public class SettingsView {
      *
      * @author Kerr
      */
-    public SettingsView(MainView callback) {
+    public SettingsDialog(MainView callback) {
         this.callback = callback;
     }
 

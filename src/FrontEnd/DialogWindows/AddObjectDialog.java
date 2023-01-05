@@ -1,4 +1,4 @@
-package FrontEnd.dialogWindows;
+package FrontEnd.DialogWindows;
 
 import BackEnd.Object;
 import FrontEnd.MainView;
@@ -8,7 +8,7 @@ import javafx.scene.layout.GridPane;
 
 import java.util.Objects;
 
-public class AddObjectView {
+public class AddObjectDialog {
 
     /**
      * Opens a dialog box that allows the user to add an object (with location and destination)
@@ -34,25 +34,25 @@ public class AddObjectView {
 
         Label locationXLabel = new Label("location (X):");
         Spinner<Integer> locationXSpinner = new Spinner<>();
-        SpinnerValueFactory<Integer> valueFactoryLocationX = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, callback.getSettingsView().gridWidth - 1);
+        SpinnerValueFactory<Integer> valueFactoryLocationX = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, callback.getSettingsDialog().gridWidth - 1);
         valueFactoryLocationX.setValue((Objects.isNull(object)) ? 0 : object.getLocationX());
         locationXSpinner.setValueFactory(valueFactoryLocationX);
 
         Label locationYLabel = new Label("location (Y):");
         Spinner<Integer> locationYSpinner = new Spinner<>();
-        SpinnerValueFactory<Integer> valueFactoryLocationY = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, callback.getSettingsView().gridHeight - 1);
+        SpinnerValueFactory<Integer> valueFactoryLocationY = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, callback.getSettingsDialog().gridHeight - 1);
         valueFactoryLocationY.setValue((Objects.isNull(object)) ? 0 : object.getLocationY());
         locationYSpinner.setValueFactory(valueFactoryLocationY);
 
         Label destinationXLabel = new Label("destination (X):");
         Spinner<Integer> destinationXSpinner = new Spinner<>();
-        SpinnerValueFactory<Integer> valueFactoryDestinationX = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, callback.getSettingsView().gridWidth - 1);
+        SpinnerValueFactory<Integer> valueFactoryDestinationX = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, callback.getSettingsDialog().gridWidth - 1);
         valueFactoryDestinationX.setValue((Objects.isNull(object)) ? 0 : object.getDestinationX());
         destinationXSpinner.setValueFactory(valueFactoryDestinationX);
 
         Label destinationYLabel = new Label("destination (Y):");
         Spinner<Integer> destinationYSpinner = new Spinner<>();
-        SpinnerValueFactory<Integer> valueFactoryDestinationY = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, callback.getSettingsView().gridHeight - 1);
+        SpinnerValueFactory<Integer> valueFactoryDestinationY = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, callback.getSettingsDialog().gridHeight - 1);
         valueFactoryDestinationY.setValue((Objects.isNull(object)) ? 0 : object.getDestinationY());
         destinationYSpinner.setValueFactory(valueFactoryDestinationY);
 
