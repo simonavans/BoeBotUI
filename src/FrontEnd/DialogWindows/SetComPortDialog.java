@@ -1,6 +1,7 @@
 package FrontEnd.DialogWindows;
 
 import FrontEnd.MainView;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
@@ -11,8 +12,10 @@ import jssc.SerialPortList;
  */
 public class SetComPortDialog {
 
+    private Dialog mainDialog;
+
     /**
-     * Opens a dialog box that allows the user to set the comport for the bluetooth connection
+     * Configures a dialog box that allows the user to set the comport for the bluetooth connection
      * @param callback class to which the method should callback
      *
      * @author Kerr
@@ -31,46 +34,46 @@ public class SetComPortDialog {
 
         // Create the main Layout and add the ComboBox
         VBox mainView = new VBox();
-        mainView.getChildren().addAll(new Label("Welcome! Please select a COM port to begin."), comboBox);
+        mainView.setSpacing(10);
+        mainView.getChildren().addAll(new Label("Welcome! Please select a COM port to begin:"), comboBox);
 
         // Create a new Dialog with an OK and CANCEL button and add the main layout
-        Dialog dialog = new Dialog<>();
-        dialog.setHeaderText(null);
-        dialog.setGraphic(null);
-        dialog.setTitle("Set COMPORT");
+        mainDialog = new Dialog<>();
+        mainDialog.setHeaderText(null);
+        mainDialog.setGraphic(null);
+        mainDialog.setTitle("Set COMPORT");
 
-        DialogPane dialogPane = dialog.getDialogPane();
+        DialogPane dialogPane = mainDialog.getDialogPane();
         ButtonType OkayButton = new ButtonType("Okay", ButtonBar.ButtonData.OK_DONE);
-        dialogPane.getButtonTypes().addAll(OkayButton);
+        ButtonType CancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialogPane.getButtonTypes().addAll(OkayButton, CancelButton);
         dialogPane.setContent(mainView);
+        dialogPane.getStylesheets().add("applicationStyle.css");
 
         // Add button functionality
-        Button okButton = (Button) dialog.getDialogPane().lookupButton(OkayButton);
+        Button okButton = (Button) mainDialog.getDialogPane().lookupButton(OkayButton);
         okButton.addEventFilter(ActionEvent.ACTION, event -> {
-
-
             if (comboBox.getValue() == null) {
-                Alert errorAlert = new Alert(Alert.AlertType.ERROR);
-                errorAlert.setHeaderText(null);
-                errorAlert.setContentText("Please select a COM port");
-                errorAlert.showAndWait();
+                callback.displayError("Please select a COM port");
                 event.consume();
             } else {
                 callback.getSettingsDialog().comPort = Integer.parseInt(comboBox.getValue().charAt(comboBox.getValue().length() - 1) + "");
                 if(!callback.getBluetoothConnection().openPort()) {
-                    Alert errorAlert = new Alert(Alert.AlertType.ERROR);
-                    errorAlert.setHeaderText(null);
-                    errorAlert.setContentText("Failed to connect bluetooth. It is recommended\nto select a different COM port or to make sure the\nbluetooth module is correctly paired to your PC");
-                    errorAlert.showAndWait();
+                    callback.displayError("Failed to connect bluetooth. It is recommended to select a different COM port or to make sure the bluetooth module is correctly paired to your PC.");
                     event.consume();
                 }
             }
         });
 
-//        dialog.setOnCloseRequest(event -> Platform.exit()); //TODO fix this
-
-        // Show the dialog and wait until the user has pressed cancel or okay
-        dialog.showAndWait();
+        Button closeButton = (Button) mainDialog.getDialogPane().lookupButton(CancelButton);
+        closeButton.addEventFilter(ActionEvent.ACTION, event -> Platform.exit());
     }
 
+    /**
+     * Getter method that returns the dialog window of this class
+     * @return the dialog window of this class
+     *
+     * @author Kerr
+     */
+    public Dialog getMainDialog() {return mainDialog; }
 }

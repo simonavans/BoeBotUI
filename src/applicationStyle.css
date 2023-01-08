@@ -1,0 +1,21 @@
+.root{
+    -fx-font-size: 12pt;
+    -fx-font-family: "Verdana";
+    -fx-focus-color: rgb(198, 0, 48);
+    -fx-accent: rgb(198, 0, 48);
+    -fx-default-button: rgb(198, 0, 48);
+}
+
+/*.button:focused {*/
+    /*-fx-background-color: rgb(238, 232, 232);*/
+    /*-fx-background-radius:0;*/
+    /*-fx-border-color:black;*/
+    /*-fx-border-width: 0 3 3 0;*/
+/*}*/
+
+/*.button:collapsed {*/
+    /*-fx-background-color: rgb(238, 232, 232);*/
+    /*-fx-background-radius:0;*/
+    /*-fx-border-color:black;*/
+    /*-fx-border-width: 0 3 3 0;*/
+/*}*/

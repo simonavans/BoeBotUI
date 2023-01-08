@@ -1,6 +1,9 @@
 package BackEnd.PathFinding;
 
+import BackEnd.Object;
+import BackEnd.Obstruction;
 import FrontEnd.MainView;
+import javafx.collections.ObservableList;
 
 import java.util.ArrayList;
 
@@ -20,6 +23,9 @@ public class PathFinder {
 
     private int turnWeight;
     private int forwardWeight;
+
+    private ArrayList<int[]> routeToInt = new ArrayList<>();
+    private ArrayList<String> routeToString = new ArrayList<>();
 
     /**
      * Constructs a pathfinder given a certain graph, start location and start orientation.
@@ -124,43 +130,22 @@ public class PathFinder {
     public int getForwardWeight() { return forwardWeight;}
 
     /**
-     * Setter method that sets the start X coordinate of the boebot.
-     * @param startX start X coordinate of the boebot.
+     * Getter method that returns the route converted to a list of integers arrays in the format of {x,y}
+     * @return route converted to a list of integers arrays in the format of {x,y}
      *
      * @author Kerr
      */
-    public void setStartX(int startX) {
-        this.startX = startX;
-    }
+    public ArrayList<int[]> getRouteToInt() {return routeToInt;}
 
     /**
-     * Setter method that sets the start Y coordinate of the boebot.
-     * @param startY start Y coordinate of the boebot.
-     *
-     * @author Kerr
+     * Getter method that returns the route to a list of string instruction in the format
+     * Left = turn left, Right = turn right, Forward = move forward, place = place object, pickup = pick up object
+     * @return a list of string instruction
      */
-    public void setStartY(int startY) {
-        this.startY = startY;
-    }
+    public ArrayList<String> getRouteToString() {return routeToString; }
 
     /**
-     * Setter method that sets the X component of the orientation vector of the boebot.
-     * @param startOrientationVX X component of the orientation vector of the boebot.
-     */
-    public void setStartOrientationVX(int startOrientationVX) {
-        this.startOrientationVX = startOrientationVX;
-    }
-
-    /**
-     * Setter method that sets the Y component of the orientation vector of the boebot.
-     * @param startOrientationVY Y component of the orientation vector of the boebot.
-     */
-    public void setStartOrientationVY(int startOrientationVY) {
-        this.startOrientationVY = startOrientationVY;
-    }
-
-    /**
-     * Calculate the shortest route (the route that takes the leas amount of time to complete) between the robots
+     * Helper method that calculates the shortest route (the route that takes the leas amount of time to complete) between the robots
      * current location and its destination given by an x and y coordinate
      *
      * @param destinationX the x coordinate of the destination
@@ -172,7 +157,7 @@ public class PathFinder {
      *
      * @author Kerr
      */
-    public ArrayList<Node> calculateShortestPathFromSource(int destinationX, int destinationY, boolean dropOff) {
+    private ArrayList<Node> calculateShortestPathFromSource(int destinationX, int destinationY, boolean dropOff) {
 
         // Get the node from which the robot starts
         Node startNode = grid.getNode(startX, startY);
@@ -220,7 +205,7 @@ public class PathFinder {
                 startOrientationVY = currentNode.getY() - previousNode.getY();
                 startOrientationVX = currentNode.getX() - previousNode.getX();
 
-                if (dropOff) { //TODO I do not fully agree with having this logic in this method, this could also be placed in the gridView
+                if (dropOff) {
                     startX = previousNode.getX();
                     startY = previousNode.getY();
                 } else {
@@ -293,7 +278,7 @@ public class PathFinder {
      *
      * @author Kerr
      */
-    private int[] calculateVectors(Node currentNode, Node destinationNode) { // TODO consider changing this logic
+    private int[] calculateVectors(Node currentNode, Node destinationNode) {
         return calculateVectors(currentNode, destinationNode, startOrientationVX, startOrientationVY);
     }
 
@@ -345,14 +330,16 @@ public class PathFinder {
         return (int) (Math.acos(dotProduct) * 180 / Math.PI);
     }
 
+
+    //TODO remove
     /**
-     * convert a route (given as a list of nodes the robot passes) to a list of coordinates in the format {x, y}.
+     * Helper method that converts a route (given as a list of nodes the robot passes) to a list of coordinates in the format {x, y}.
      * @param route a list of nodes the robot passes.
      * @return an ArrayList of arrays with coordinates the robot passes in the format {x, y}
      *
      * @author Kerr
      */
-    public ArrayList<int[]> convertRouteToInt(ArrayList<Node> route) {
+    private ArrayList<int[]> convertRouteToInt(ArrayList<Node> route) {
         ArrayList<int[]> routeToInt = new ArrayList<>();
 
         // For every step in the route, construct an array in the format {x, y}
@@ -367,7 +354,7 @@ public class PathFinder {
     }
 
     /**
-     * Convert a route (given as a list of nodes the robot passes) to a list of instructions in the format
+     * Helper method that converts a route (given as a list of nodes the robot passes) to a list of instructions in the format
      * Left = turn left, Right = turn right, Forward = move forward
      * Turning 180 degrees is defined as turing left twice.
      * @param route a list of nodes the robot passes.
@@ -377,7 +364,7 @@ public class PathFinder {
      *
      * @author Kerr
      */
-    public ArrayList<String> convertRouteToString(ArrayList<Node> route, int startOrientationVX, int startOrientationVY) {
+    private ArrayList<String> convertRouteToString(ArrayList<Node> route, int startOrientationVX, int startOrientationVY) {
 
         // Set commands for moving forward, left, right and place
         String forward = "Forward";
@@ -418,5 +405,107 @@ public class PathFinder {
             }
         }
         return routeToString;
+    }
+
+
+    /**
+     * Calculates a route over the grid given a list of objects and their destinations
+     *
+     * @param objectList A list of objects with their location and destination
+     * @author Kerr
+     */
+    public boolean calculateRoute(ObservableList<Object> objectList, ObservableList<Obstruction> obstructionList) {
+        // Reset previously calculated path and grid
+         {
+            routeToInt.clear();
+            routeToString.clear();
+            grid.resetObstructions();
+        }
+        // Get initial start location and orientation in case finding a path fails
+        int initialX = startX;
+        int initialY = startY;
+        int initialVX = startOrientationVX;
+        int initialVY = startOrientationVY;
+
+        ArrayList<int[][]> rearrangementList = new ArrayList<>();
+        ArrayList<Node> result;
+        int startVX;
+        int startVY;
+
+        // Go through each object defined by the user
+        for (Object object : objectList) {
+
+            // Add an obstruction at the location of the object
+            grid.addObstruction(object.getLocationX(), object.getLocationY());
+
+            // add the object location and destination to the list of location-destination pairs
+            rearrangementList.add(new int[][]{{object.getLocationX(), object.getLocationY()}, {object.getDestinationX(), object.getDestinationY()}});
+        }
+
+        // Go through each obstruction defined by the user
+        for (Obstruction obstruction : obstructionList) {
+
+            // Add an obstruction at the location of the obstruction
+            grid.addObstruction(obstruction.getLocationX(), obstruction.getLocationY());
+        }
+
+        // For each object location-destination pairs determine the route to the object location and then the object destination
+        for (int[][] destination : rearrangementList) {
+
+            // Get the start orientation of the robot
+            startVX = startOrientationVX;
+            startVY = startOrientationVY;
+
+            // Calculate the route to the object location and remove the object from the grid
+            result = calculateShortestPathFromSource(destination[0][0], destination[0][1], false);
+
+            // Check if a path has been found, if not, return false
+            if (result == null) {
+                startX = initialX;
+                startY = initialY;
+                startOrientationVX = initialVX;
+                startOrientationVY = initialVY;
+                return false;
+            }
+
+            grid.removeObstruction(destination[0][0], destination[0][1]);
+
+            // Convert the calculated route to an list of Integers and to a list of strings and add them to the routeToInt and routeToString
+            routeToInt.addAll(convertRouteToInt(result));
+            routeToString.addAll(convertRouteToString(result, startVX, startVY));
+
+            // Since the first route is always to pickup an item, add the pickup command to the end the list of commands
+            routeToString.add("Pickup");
+
+            result.clear();
+
+            // Get the start orientation of the robot
+            startVX = startOrientationVX;
+            startVY = startOrientationVY;
+
+            // Calculate the route to the object destination and add the object to the grid
+            result = calculateShortestPathFromSource(destination[1][0], destination[1][1], true);
+
+            // Check if a path has been found, if not, return false
+            if (result == null) {
+                startX = initialX;
+                startY = initialY;
+                startOrientationVX = initialVX;
+                startOrientationVY = initialVY;
+                return false;
+            }
+
+            grid.addObstruction(destination[1][0], destination[1][1]);
+
+            // Convert the calculated route to an list of Integers and to a list of strings and add them to the routeToInt and routeToString
+            routeToInt.addAll(convertRouteToInt(result));
+            routeToString.addAll(convertRouteToString(result, startVX, startVY));
+
+            // Since the first route is always to pickup an item, add the pickup command to the end the list of commands
+            routeToString.add("Place");
+
+            result.clear();
+        }
+        return true;
     }
 }

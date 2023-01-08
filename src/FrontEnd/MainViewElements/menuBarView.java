@@ -33,12 +33,12 @@ public class menuBarView {
 
         // Create three submenu items for adding obstructions, editing obstructions and deleting obstructions.
         MenuItem menuAddObstruction = new MenuItem("Add Obstruction");
-        MenuItem menuEditOstruction = new MenuItem("Edit Obstruction");
+        MenuItem menuEditObstruction = new MenuItem("Edit Obstruction");
         MenuItem menuDeleteObstruction = new MenuItem("Delete Obstruction");
 
         // Create a menu for editing obstruction properties and add the previously created submenus
         this.obstructionMenu = new Menu("Obstruction Editor");
-        obstructionMenu.getItems().addAll(menuAddObstruction, menuEditOstruction, menuDeleteObstruction);
+        obstructionMenu.getItems().addAll(menuAddObstruction, menuEditObstruction, menuDeleteObstruction);
 
         // Create one submenu item for changing the settings on the robot.
         MenuItem menuApplicationSettings = new MenuItem("Application Settings");
@@ -52,15 +52,15 @@ public class menuBarView {
         mainLayout.getMenus().addAll(objectMenu, obstructionMenu, settingsMenu);
 
         // menu functionality
-        menuAddObject.setOnAction(e -> callback.onObjectListEvent("Add"));
-        menuEditObjects.setOnAction(e -> callback.onObjectListEvent("Edit"));
-        menuDeleteObject.setOnAction(e -> callback.onObjectListEvent("Delete"));
+        menuAddObject.setOnAction(e -> callback.onAddObjectEvent());
+        menuEditObjects.setOnAction(e -> callback.onEditObjectEvent());
+        menuDeleteObject.setOnAction(e -> callback.onDeleteObjectEvent());
 
-        menuAddObstruction.setOnAction(e -> callback.onObstructionListEvent("Add"));
-        menuEditOstruction.setOnAction(e -> callback.onObstructionListEvent("Edit"));
-        menuDeleteObstruction.setOnAction(e -> callback.onObstructionListEvent("Delete"));
+        menuAddObstruction.setOnAction(e -> callback.onAddObstructionEvent());
+        menuEditObstruction.setOnAction(e -> callback.onEditObjectEvent());
+        menuDeleteObstruction.setOnAction(e -> callback.onDeleteObstructionEvent());
 
-        menuApplicationSettings.setOnAction(e -> callback.onMenuBarEvent("Application Settings"));
+        menuApplicationSettings.setOnAction(e ->  callback.onSettingsEvent());
     }
 
     /**

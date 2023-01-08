@@ -42,6 +42,7 @@ public class ObjectListView {
         this.editButton = new Button("Edit");
         this.deleteButton = new Button("Delete");
         this.startRouteButton = new Button("Start Route");
+        startRouteButton.setDefaultButton(true);
 
         // Add the three manipulation buttons to an HBox
         HBox buttonHBox = new HBox();
@@ -88,17 +89,18 @@ public class ObjectListView {
         objectTable.getSortOrder().add(label);
 
         // Add all the previously created elements to the mainView
+        mainView.setSpacing(10);
         mainView.getChildren().addAll(objectTable, buttonHBox, startRouteButton);
         mainView.setAlignment(Pos.CENTER);
 
         // Buttons functionality
-        addButton.setOnAction(e -> callback.onObjectListEvent("Add"));
+        addButton.setOnAction(e -> callback.onAddObjectEvent());
 
-        editButton.setOnAction(e -> callback.onObjectListEvent("Edit"));
+        editButton.setOnAction(e -> callback.onEditObjectEvent());
 
-        deleteButton.setOnAction(e -> callback.onObjectListEvent("Delete"));
+        deleteButton.setOnAction(e -> callback.onDeleteObjectEvent());
 
-        startRouteButton.setOnAction(e -> callback.onObjectListEvent("Start Route"));
+        startRouteButton.setOnAction(e -> callback.onStartRouteEvent());
     }
 
     /**
@@ -157,4 +159,36 @@ public class ObjectListView {
      * @author Kerr
      */
     public TableView<Object> getObjectTable() {return objectTable;}
+
+    /**
+     * Get an object given an location X and location Y
+     * @param locationX the X location of the object
+     * @param locationY the Y location of the object
+     * @return the object on the location (X,Y)
+     *
+     * @author Kerr
+     */
+    public Object getObjectFromLocation(int locationX, int locationY) {
+        for (Object object : objectList) {
+            if (object.getLocationX() == locationX && object.getLocationY() == locationY) {
+                return object;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get an object given an destination X and destination Y
+     * @param destinationX the X destination of the object
+     * @param destinationY the Y destination of the object
+     * @return the object with the destination (X,Y)
+     */
+    public Object getObjectFromDestination(int destinationX, int destinationY) {
+        for (Object object : objectList) {
+            if (object.getDestinationX() == destinationX && object.getDestinationY() == destinationY) {
+                return object;
+            }
+        }
+        return null;
+    }
 }

@@ -13,6 +13,7 @@ public class BluetoothConnection {
     private MainView callback;
     private SerialPort serialPort;
     private boolean isDisabled = false;
+    private boolean isConnected = false;
 
     private String receivedCommand = "";
 
@@ -26,6 +27,12 @@ public class BluetoothConnection {
     public BluetoothConnection(MainView callback) {
         this.callback = callback;
     }
+
+    /**
+     * Getter method that returns if a bluetooth connection is made
+     * @return true = a bluetooth connection is made, false = no bluetooth connection is made
+     */
+    public boolean isConnected() { return isConnected;}
 
     /**
      * Method that opens a bluetooth connection using a Baudrate of 115200 and the COM port given by the user.
@@ -49,6 +56,7 @@ public class BluetoothConnection {
 
             // Add an event listeners that checks for an incoming signal
             serialPort.addEventListener(new PortReader(), SerialPort.MASK_RXCHAR);
+            isConnected = true;
         } catch (SerialPortException e) {
             return false;
         }
@@ -63,6 +71,7 @@ public class BluetoothConnection {
     public void closePort() {
         try {
             serialPort.closePort();
+            isConnected = false;
         } catch (SerialPortException e) {
             e.printStackTrace();
         }
@@ -89,6 +98,10 @@ public class BluetoothConnection {
      */
     public void sendManualControl(String command) {
         if (!isDisabled) {
+
+            // Permanent print statement to monitor bluetooth
+            System.out.println("[sendManualControl] " + "Application: " + command);
+
             sendCommand("Application: " + command);
         }
         isDisabled = true;
@@ -101,6 +114,9 @@ public class BluetoothConnection {
      * @author Kerr
      */
     public void sendAutomaticControl(String command) {
+        // Permanent print statement to monitor bluetooth
+        System.out.println("[sendAutomaticControl] " + "Application: " + command);
+
         sendCommand("Application: " + command);
     }
 
@@ -127,6 +143,9 @@ public class BluetoothConnection {
         // For as long as the received command does not contain a *, do not do anything. Else, send the command to the callback
         if(receivedCommand.contains("*")) {
             callback.onBluetoothReceiveEvent(receivedCommand.substring(0, receivedCommand.length() - 1));
+
+            // Permanent print statement to monitor bluetooth
+            System.out.println("[receiveCommand] " + receivedCommand.substring(0, receivedCommand.length() - 1));
 
             // Clear the command
             receivedCommand = "";
@@ -157,4 +176,3 @@ public class BluetoothConnection {
         }
     }
 }
-
