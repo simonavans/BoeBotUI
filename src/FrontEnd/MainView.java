@@ -49,8 +49,9 @@ import java.util.Optional;
 // unify bluetooth commands;
 
 //TODO bugs:
-// TODO fix current sizing of tables and elements
-//  Fix close request on splash screen
+// fix current sizing of tables and elements
+// Fix close request on splash screen
+// Sorting the TableView with more than 10 objects results in the order Object 1, object 10, object 11, object 2 etc.
 
 //================================================================================
 // COULD FIX
@@ -126,8 +127,8 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
 
         // Set window settings
         primaryStage.setTitle("BoeBot GUI");
-        primaryStage.setWidth(1000);
-        primaryStage.setHeight(800);
+        primaryStage.setWidth(1200);
+        primaryStage.setHeight(1000);
 
         // Create all Major UI elements
         VBox controls = controlsView.getMainLayout();
@@ -141,11 +142,11 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
         BorderPane mainView = new BorderPane();
 
         // Set top layout
-        Image image = new Image("file:header2.png");
+        Image image = new Image("file:Header.jpg");
         ImageView imageView = new ImageView(image);
 
 
-        Line lineMiddle = new Line(0, 248, 1000, 248);
+        Line lineMiddle = new Line(0, 248, 1200, 248);
         lineMiddle.setStroke(Color.rgb(198, 0, 48));
         lineMiddle.setStrokeWidth(4);
 

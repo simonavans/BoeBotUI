@@ -22,10 +22,10 @@ public class LegendView {
     public LegendView() {
 
         // Create main font
-        javafx.scene.text.Font font = Font.font("Verdana", FontWeight.BOLD, 13);
+        javafx.scene.text.Font font = Font.font("Verdana", FontWeight.BOLD, 15);
 
         // Create a new circle marking an object location
-        Circle locationCircle = new Circle(0, 0, 15, Color.rgb(198,0,48));
+        Circle locationCircle = new Circle(0, 0, 18, Color.rgb(198,0,48));
 
         // Create centered label for the circle symbol
         Text objectLocationLabel = new Text("0A");
@@ -39,7 +39,7 @@ public class LegendView {
         Group groupLocationCircle = new Group(locationCircle, objectLocationLabel);
 
         // Create a new circle marking an object destination
-        Circle destinationCircle = new Circle(0, 0, 15, Color.WHITE);
+        Circle destinationCircle = new Circle(0, 0, 18, Color.WHITE);
         destinationCircle.setStroke(Color.rgb(198,0,48));
         destinationCircle.setStrokeWidth(2);
 
@@ -54,7 +54,7 @@ public class LegendView {
         Group groupDestinationCircle = new Group(destinationCircle, objectDestinationLabel);
 
         // Create a new circle marking an obstruction location
-        Circle obstructionCircle = new Circle(0, 0, 15, Color.GRAY);
+        Circle obstructionCircle = new Circle(0, 0, 18, Color.GRAY);
 
         // Create centered label for the circle symbol
         Text obstructionLocationLabel = new Text("X0");
@@ -87,10 +87,10 @@ public class LegendView {
         Label obstructionLocationText = new Label("Obstruction\nLocation:");
         obstructionLocationText.setFont(font);
 
-        Label lineTraversedText = new Label("Traversed\nPath:");
+        Label lineTraversedText = new Label("Traversed:");
         lineTraversedText.setFont(font);
 
-        Label lineUntraversedText = new Label("Untraversed\nPath:");
+        Label lineUntraversedText = new Label("Untraversed: ");
         lineUntraversedText.setFont(font);
 
         // Create the mainLayout and add all the previously created elements to it.

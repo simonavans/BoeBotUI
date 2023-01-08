@@ -59,11 +59,11 @@ public class GridView {
      * @author Kerr
      */
     public void updateGrid() {
-        int resolutionPX = 1000;
-        int resolutionPY = 800;
+        int resolutionPX = 1200;
+        int resolutionPY = 1000;
         int gridSize = 42;
-        int gridYShift = 250;
-        int gridXShift = 590;
+        int gridYShift = 320;
+        int gridXShift = 700;
 
         this.gridWidth = callback.getSettingsDialog().gridWidth;
         this.gridHeight = callback.getSettingsDialog().gridHeight;

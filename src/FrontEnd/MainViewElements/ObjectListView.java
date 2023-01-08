@@ -52,11 +52,11 @@ public class ObjectListView {
         // Create a new TableView
         this.objectTable = new TableView<>();
         objectTable.setItems(FXCollections.observableList(objectList));
-        objectTable.setPrefWidth(250);
+        objectTable.setPrefWidth(330);
 
         // Add a new TableColumn for the label of an object
         TableColumn<Object, String> label = new TableColumn<>("Label");
-        label.setPrefWidth(70);
+        label.setPrefWidth(90);
         label.setCellValueFactory(new PropertyValueFactory<>("label"));
         label.setSortType(TableColumn.SortType.ASCENDING);
 
@@ -66,19 +66,19 @@ public class ObjectListView {
 
         // Add a new TableColumn for the location X and Y data and destination X and Y data
         TableColumn<Object, Integer> locationX = new TableColumn<>("X");
-        locationX.setPrefWidth(45);
+        locationX.setPrefWidth(60);
         locationX.setCellValueFactory(new PropertyValueFactory<>("locationX"));
 
         TableColumn<Object, Integer> locationY = new TableColumn<>("Y");
-        locationY.setPrefWidth(45);
+        locationY.setPrefWidth(60);
         locationY.setCellValueFactory(new PropertyValueFactory<>("locationY"));
 
         TableColumn<Object, Integer> destinationX = new TableColumn<>("X");
-        destinationX.setPrefWidth(45);
+        destinationX.setPrefWidth(60);
         destinationX.setCellValueFactory(new PropertyValueFactory<>("destinationX"));
 
         TableColumn<Object, Integer> destinationY = new TableColumn<>("Y");
-        destinationY.setPrefWidth(45);
+        destinationY.setPrefWidth(60);
         destinationY.setCellValueFactory(new PropertyValueFactory<>("destinationY"));
 
         // Construct the TableView from the previously created columns

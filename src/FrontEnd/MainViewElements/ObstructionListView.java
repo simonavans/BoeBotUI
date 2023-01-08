@@ -47,11 +47,11 @@ public class ObstructionListView {
         // Create a new TableView
         this.ObstructionTable = new TableView<>();
         ObstructionTable.setItems(FXCollections.observableList(obstructionList));
-        ObstructionTable.setPrefWidth(250);
+        ObstructionTable.setPrefWidth(330);
 
         // Add a new TableColumn for the label of an Obstruction
         TableColumn<Obstruction, String> label = new TableColumn<>("Label");
-        label.setPrefWidth(110);
+        label.setPrefWidth(130);
         label.setCellValueFactory(new PropertyValueFactory<>("label"));
         label.setSortType(TableColumn.SortType.ASCENDING);
 
@@ -61,11 +61,11 @@ public class ObstructionListView {
 
         // Add a new TableColumn for the location X and Y data
         TableColumn<Obstruction, Integer> locationX = new TableColumn<>("X");
-        locationX.setPrefWidth(70);
+        locationX.setPrefWidth(100);
         locationX.setCellValueFactory(new PropertyValueFactory<>("locationX"));
 
         TableColumn<Obstruction, Integer> locationY = new TableColumn<>("Y");
-        locationY.setPrefWidth(70);
+        locationY.setPrefWidth(100);
         locationY.setCellValueFactory(new PropertyValueFactory<>("locationY"));
 
 
