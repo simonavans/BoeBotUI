@@ -167,6 +167,7 @@ public class ObstructionDialog {
      *
      * @return an Array of the format {locationX, locationY, destinationX, destinationY} with the user input
      */
+
     public Optional<int[]> openAddDialog() {
         mainDialog.setResult(null);
         currentLayout = mainAddLayout;
@@ -196,8 +197,17 @@ public class ObstructionDialog {
         // Set the ValueFactory for the spinners.
         setSpinnerValues(obstruction.getLocationX(), obstruction.getLocationY());
 
+        // Reset the checkbox and destination spinners
+        ((CheckBox) mainEditLayout.getChildren().get(4)).setSelected(false);
+        mainEditLayout.getChildren().get(5).setDisable(true);
+        mainEditLayout.getChildren().get(6).setDisable(true);
+        mainEditLayout.getChildren().get(7).setDisable(true);
+        mainEditLayout.getChildren().get(8).setDisable(true);
+
         // Set the dialog title and open the dialog
         mainDialog.setTitle("Edit obstruction");
+
+
         mainDialog.getDialogPane().setContent(mainEditLayout);
 
         this.obstruction = obstruction;

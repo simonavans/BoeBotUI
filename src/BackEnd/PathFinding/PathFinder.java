@@ -330,8 +330,6 @@ public class PathFinder {
         return (int) (Math.acos(dotProduct) * 180 / Math.PI);
     }
 
-
-    //TODO remove
     /**
      * Helper method that converts a route (given as a list of nodes the robot passes) to a list of coordinates in the format {x, y}.
      * @param route a list of nodes the robot passes.
@@ -412,15 +410,15 @@ public class PathFinder {
      * Calculates a route over the grid given a list of objects and their destinations
      *
      * @param objectList A list of objects with their location and destination
+     * @param obstructionList A list of obstructions with their locations
      * @author Kerr
      */
     public boolean calculateRoute(ObservableList<Object> objectList, ObservableList<Obstruction> obstructionList) {
         // Reset previously calculated path and grid
-         {
-            routeToInt.clear();
-            routeToString.clear();
-            grid.resetObstructions();
-        }
+        routeToInt.clear();
+        routeToString.clear();
+        grid.resetObstructions();
+
         // Get initial start location and orientation in case finding a path fails
         int initialX = startX;
         int initialY = startY;
@@ -506,6 +504,72 @@ public class PathFinder {
 
             result.clear();
         }
+        return true;
+    }
+
+    /**
+     * Calculates a route over the grid given a single object destination
+     *
+     * @param objectList A list of objects with their location and destination
+     * @param obstructionList A list of obstructions with their locations
+     * @param destinationX the destination X of the single object
+     * @param destinationY the destination Y of the single object.
+     * @author Kerr
+     */
+    public boolean calculateRoute(ObservableList<Object> objectList, ObservableList<Obstruction> obstructionList, int destinationX, int destinationY) {
+        // Reset previously calculated path and grid
+        routeToInt.clear();
+        routeToString.clear();
+        grid.resetObstructions();
+
+        // Get initial start location and orientation in case finding a path fails
+        int initialX = startX;
+        int initialY = startY;
+        int initialVX = startOrientationVX;
+        int initialVY = startOrientationVY;
+
+        ArrayList<Node> result;
+        int startVX;
+        int startVY;
+
+        // Go through each object defined by the user
+        for (Object object : objectList) {
+
+            // Add an obstruction at the location of the object
+            grid.addObstruction(object.getLocationX(), object.getLocationY());
+        }
+
+        // Go through each obstruction defined by the user
+        for (Obstruction obstruction : obstructionList) {
+
+            // Add an obstruction at the location of the obstruction
+            grid.addObstruction(obstruction.getLocationX(), obstruction.getLocationY());
+        }
+
+        // Determine the route to the object destination
+
+        // Get the start orientation of the robot
+        startVX = startOrientationVX;
+        startVY = startOrientationVY;
+
+        // Calculate the route to the object location and remove the object from the grid
+        result = calculateShortestPathFromSource(destinationX, destinationY, true);
+
+        // Check if a path has been found, if not, return false
+        if (result == null) {
+            startX = initialX;
+            startY = initialY;
+            startOrientationVX = initialVX;
+            startOrientationVY = initialVY;
+            return false;
+        }
+
+        // Convert the calculated route to an list of Integers and to a list of strings and add them to the routeToInt and routeToString
+        routeToInt.addAll(convertRouteToInt(result));
+        routeToString.addAll(convertRouteToString(result, startVX, startVY));
+
+        // Since the route is always to drop off an item, add the pickup command to the end the list of commands
+        routeToString.add("Place");
         return true;
     }
 }

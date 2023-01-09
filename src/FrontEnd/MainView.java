@@ -17,7 +17,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.TableView;
 import javafx.scene.image.Image;
@@ -43,23 +42,26 @@ import java.util.Optional;
 
 //TODO must haves:
 // add textual updates (new class should be created)
-// what to do when user spams manual control buttons?
-// fix bluetooth
 // don't allow boebot to crash into objects when giving instructions
+// Deal with unknown object
 // unify bluetooth commands;
 
-//TODO bugs:
-// fix current sizing of tables and elements
-// Fix close request on splash screen
+//TODO mayor bugs:
+// First bluetooth command in an automatic route is send twice
+
+//TODO minor bugs:
 // Sorting the TableView with more than 10 objects results in the order Object 1, object 10, object 11, object 2 etc.
+// Maybe: add a resume button in the application?
+// Fix close request on splash screen
+// Obstruction list in wrong order -> as far as I know this is no longer a bug, but keep tracking this
 
 //================================================================================
 // COULD FIX
 //================================================================================
 
-//TODO cleanup:
-// Cleanup dialog windows
+//TODO - possible improvements
 // make "Pickup" a valid step
+//TODO how to resume after a break when in the middle of a turn? -> currently we just close the application
 
 //TODO 'fun'ctionality:
 // Make it possible to have the user change the order of objects so the boebot picks them up in a different order
@@ -156,7 +158,7 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
 
         // Set left layout
         VBox leftLayout = new VBox();
-        leftLayout.setAlignment(Pos.CENTER);
+        leftLayout.setAlignment(Pos.TOP_CENTER);
         leftLayout.setSpacing(10);
 
         leftLayout.getChildren().addAll(obstructionList, objectList);
@@ -167,30 +169,15 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
         mainView.setCenter(grid);
 
         // Set right layout
-        Button emergencyBreak = new Button("Emergency break");
-        emergencyBreak.setMaxWidth(Double.MAX_VALUE);
-        emergencyBreak.setOnAction(e -> onBluetoothReceiveEvent("Application: Brake"));
-        emergencyBreak.setDefaultButton(true);
-
         VBox rightLayout = new VBox();
-        rightLayout.setAlignment(Pos.CENTER);
+        rightLayout.setAlignment(Pos.TOP_CENTER);
         rightLayout.setSpacing(40);
-        rightLayout.getChildren().addAll(controls, legend, emergencyBreak);
+        rightLayout.getChildren().addAll(controls, legend);
         mainView.setRight(rightLayout);
         BorderPane.setMargin(rightLayout, new Insets(50));
 
         // Set bottom layout
         // mainView.setBottom();
-
-        //TODO remove (used for debugging)
-        Button nextStep = new Button("Debug");
-        rightLayout.getChildren().addAll(nextStep);
-
-        nextStep.setOnAction(e ->
-                {
-//                    displayNextStep();
-                    bluetoothConnection.sendAutomaticControl("bla");
-                });
 
         // Set the stage
         Scene scene = new Scene(mainView);
@@ -347,7 +334,7 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
     /**
      * Helper method that based on a list of labels in the format <name x> generates a label with the lowest possible
      * unique (positive) number x
-     * @param labelList an Arraylist of labels in the format <name x>
+     * @param labelList an ArrayList of labels in the format <name x>
      * @return a label with the lowest possible unique (positive) number x
      */
     private String generateObjectNumber(ArrayList<String> labelList) {
@@ -411,7 +398,6 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
             pathfinder.updateWeights();
         }
     }
-
 
     //================================================================================
     // Callbacks - Adding, editing and deleting objects
@@ -590,34 +576,85 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
      *
      * @author Kerr
      */
-    @Override
     public void onStartRouteEvent() {
         TableView<Object> objectTable = objectListView.getObjectTable();
 
-        if (objectTable.getItems().isEmpty()) {
-            displayError("Please add objects to the object list!");
-        } else {
-            boolean succeeded = pathfinder.calculateRoute(objectListView.getObjectList(), obstructionListView.getObstructionList());
-            if (!succeeded) {
-                displayError("No route was found, please verify the obstruction and object list!");
-            } else {
+        // Reset the previous route
+        routeToString.clear();
+        routeToInt.clear();
 
-                // Disable (most) UI buttons
-                enableAutomaticMode();
+        // Update the start orientation and location of the robot
+        pathfinder.updateStartLocation();
+        pathfinder.updateStartOrientation();
 
-                 // Reset the stepNumberString
-                stepNumberString = 0;
-                stepNumberInt = 0;
-                routeNumber = 1;
+        boolean succeededPlacing = true; // Also true when no object requires placing
+        boolean succeededPath = true; // Also true when no path was given
+        Obstruction tempObstruction = null;
 
-                // Set the route to String and Integer
-                routeToString = pathfinder.getRouteToString();
-                routeToInt = pathfinder.getRouteToInt();
+        // If the boebot is holding an object, calculate the route for placing the object and then continue
+        if (holding != null) {
+            int destinationX = holding.getDestinationX();
+            int destinationY = holding.getDestinationY();
 
-                // Show the first route
-                gridView.displayUntraversedRoute(routeToInt.subList(stepNumberInt, getNthIndex(routeNumber)));
-                transmitNextStep();
+            // Temporarily remove the object from the object list
+            objectListView.getObjectList().remove(holding);
+
+            succeededPlacing = pathfinder.calculateRoute(objectListView.getObjectList(), obstructionListView.getObstructionList(), destinationX, destinationY);
+
+            // If a path was found, add it to the route
+            if (succeededPlacing) {
+                routeToString.addAll(pathfinder.getRouteToString());
+                routeToInt.addAll(pathfinder.getRouteToInt());
             }
+
+            // Temporarily add an obstruction to the obstruction list
+            tempObstruction = new Obstruction("temp", destinationX, destinationY);
+            obstructionListView.getObstructionList().add(tempObstruction);
+        }
+
+        // If there are objects, calculate the route for placing the objects and then continue
+        if (!objectTable.getItems().isEmpty()) {
+            succeededPath = pathfinder.calculateRoute(objectListView.getObjectList(), obstructionListView.getObstructionList());
+
+            // If all paths were found, add them to the route
+            if (succeededPath) {
+                routeToString.addAll(pathfinder.getRouteToString());
+                routeToInt.addAll(pathfinder.getRouteToInt());
+            }
+        }
+
+        // Add the previously removed object back and remove the previously added obstruction if the boebot was holding an object
+        if (holding != null) {
+            objectTable.getItems().add(holding);
+            objectTable.sort();
+
+            obstructionListView.getObstructionList().remove(tempObstruction);
+        }
+
+        // If the object that the robot was holding exists and cannot be places give error
+        if (!succeededPlacing) {displayError("No route was found, please place the object the boebot is holding manually!");}
+
+        // If the object table is empty and the robot is not holding an object give error
+        else if (objectTable.getItems().isEmpty() && holding == null) {displayError("Please add objects to the object list!");}
+
+        // If the object is is not empty and no route could be found, give an error
+        else if (!succeededPath) {displayError("No route was found, please verify the obstruction and object list!");}
+
+        // If no issues are found
+        else {
+            // Disable (most) UI buttons
+            enableAutomaticMode();
+
+            // Reset the stepNumberString
+            stepNumberString = 0;
+            stepNumberInt = 0;
+            routeNumber = 1;
+
+            // Show the first route
+            gridView.displayUntraversedRoute(routeToInt.subList(stepNumberInt, getNthIndex(routeNumber)));
+
+            // transmit the first step
+            transmitNextStep(); //TODO fix problem with this (sends first command twice)
         }
     }
 
@@ -853,87 +890,34 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
 
         switch (command) {
             case "Brake":
-                bluetoothConnection.sendAutomaticControl("Brake");
+                bluetoothConnection.transmitCommand("Brake");
                 break;
             case "Uncharted":
-                bluetoothConnection.sendAutomaticControl("Uncharted");
+                bluetoothConnection.transmitCommand("Uncharted");
                 break;
             case "Disallowed":
-                bluetoothConnection.sendAutomaticControl("Disallowed");
+                bluetoothConnection.transmitCommand("Disallowed");
                 break;
             case "Forward":
-                bluetoothConnection.sendAutomaticControl("Forward");
+                bluetoothConnection.transmitCommand("Forward");
                 break;
             case "Left":
-                bluetoothConnection.sendAutomaticControl("Left");
+                bluetoothConnection.transmitCommand("Left");
                 break;
             case "Right":
-                bluetoothConnection.sendAutomaticControl("Right");
+                bluetoothConnection.transmitCommand("Right");
                 break;
             case "Place":
-                bluetoothConnection.sendAutomaticControl("Place");
+                bluetoothConnection.transmitCommand("Place");
                 break;
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    private void validateCommand(String command) {
-        // Steps
-        // - validate if step is allowed:
-        // if current step == "" -> validate is command is allowed and set command as current step + perform step
-        // if current step != "" -> check if next step == "" -> validate command and set command as next step
-        // if current step != "" -> check if next step != "" -> send "Disallowed" command to boebot and ignore
-
-        // Do not forget enable/disable automatic mode!
-
-
-        disableAutomaticMode(); //TODO only disable if a manual control is allowed
-        currentStep = command; //TODO this will cause problems
-
-        // A switch statement is used instead of directly passing the command through to make it easier to change the
-        // command send over bluetooth without having to do this in the other classes of the application
-        switch (command) {
-            case "Forward" :
-                bluetoothConnection.sendManualControl("Forward");
-                break;
-            case "Left" :
-                bluetoothConnection.sendManualControl("Left");
-                break;
-            case "Right" :
-                bluetoothConnection.sendManualControl("Right");
-                break;
-            case "Place" :
-                bluetoothConnection.sendManualControl("Place"); //TODO do not allow the boebot to place an object if there is an object behind it
-                break;
-            case "Resume" :
-                break;
-        }
-    }
-
-
-    //TODO add a method (probably to the resume part) that remembers if the boebot was
-    // holding an object when stopping and where it should stand so when resuming the pathfinder can first place this
-    // object before continuing
 
     /**
      * Method that processes received commands from the boebot.
      * @param receivedCommand received commands from the boebot.
+     *
+     * @author Kerr
      */
     @Override
     public void onBluetoothReceiveEvent(String receivedCommand) {
@@ -949,7 +933,6 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
                     transmitNextStep();
 
                 } else {
-                    bluetoothConnection.enableBluetooth();
                     switch (currentStep) {
                         case "Forward":
                             moveForward();
@@ -979,7 +962,7 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
                 }
 
                 break;
-            case "Object":
+            case "Object": //TODO test this
 
                 // If the object is known by the object list, ignore this step
                 if (objectListView.getObjectFromLocation(settingsDialog.boebotX + settingsDialog.boebotVX, settingsDialog.boebotY + settingsDialog.boebotVY) != null) {
@@ -1001,41 +984,28 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
                 addObstruction(obstructionX, obstructionY);
 
                 // Display an error
-                displayError("An unknown obstruction was found at (" + obstructionX + ", " + obstructionY + "), the boebot has stopped.\nPlease press RESUME to continue.");
+                displayError("An unknown obstruction was found at (" + obstructionX + ", " + obstructionY + "), the boebot has stopped.\nPlease press RESUME on the remote, or 'Start Route' in the application to continue.");
 
             case "Brake":
                 onBluetoothTransmitEvent(command);
                 disableAutomaticMode();
                 displayError("Emergency break engaged. The boebot can no longer continue. Please restart the application and place the boebot in its starting position.");
                 Platform.exit();
-
                 break;
             case "Resume":
-                //TODO how to resume/break when in the middle of a turn?
-                validateCommand(command);
+                if (validateCommand(command)) {onStartRouteEvent();}
                 break;
-
-
-
-
-
-
-
-
-
-
-
             case "Forward":
-                validateCommand(command);
+                if (validateCommand(command)) {onBluetoothTransmitEvent("Forward");}
                 break;
             case "Left":
-                validateCommand(command);
+                if (validateCommand(command)) {onBluetoothTransmitEvent("Left");}
                 break;
             case "Right":
-                validateCommand(command);
+                if (validateCommand(command)) {onBluetoothTransmitEvent("Right");}
                 break;
             case "Place":
-                validateCommand(command);
+                if (validateCommand(command)) {onBluetoothTransmitEvent("Place");}
                 break;
         }
     }
@@ -1047,11 +1017,11 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
 
 
     /**
-     * Method that removes the object that will be picked up from the grid
+     * Method that removes the object that will be picked up from the grid. Important: this method assumes the boebot
+     * is already on the location of the object.
      *
      * @author Kerr
      */
-    //TODO keep in mind here that this commands assumes the boebot is already on the location of the object
     private void pickUpObject() {
         Object object = objectListView.getObjectFromLocation(settingsDialog.boebotX, settingsDialog.boebotY);
         holding = object;
@@ -1121,7 +1091,7 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
         int locationY = settingsDialog.boebotY;
 
         // Remove the object from the object list
-        objectListView.getObjectTable().getItems().remove(holding); //TODO this might cause problems if this list is used for tracking the location of objects (the object location is then not relevant)
+        objectListView.getObjectTable().getItems().remove(holding);
         gridView.deletePointOfInterest(holding.getDestinationX(), holding.getDestinationY());
         holding = null;
 
@@ -1142,29 +1112,46 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
     //================================================================================
 
 
+    // TODO do not allow the boebot to place an object if there is an object behind it
+    // TODO split this method into multiple parts for each command
+    // TODO the validation of the resume command should just be that the boebot must be in automatic mode and the queue should not be full, else add it to the first or second position in the queue
 
+    /**
+     * Method that validates if a certain command is legal. A command is considered illegal if it will cause the robot
+     * to hit or displace an object or obstruction when it should not or if it will cause the robot to go off the grid.
+     * @param command command that will be validated for 'legality'
+     * @return If an command is legal and the command queue is not full (< 2 commands) = true, else = false
+     *
+     * @author Kerr
+     */
+    private boolean validateCommand(String command) {
+        // Steps
+        // - validate if step is allowed:
+        // if current step == "" -> validate is command is allowed and set command as current step + perform step
+        // if current step != "" -> check if next step == "" -> validate command and set command as next step
+        // if current step != "" -> check if next step != "" -> send "Disallowed" command to boebot and ignore
 
+        // Do not forget enable/disable automatic mode!
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        if (inAutomaticMode) {
+            //Check if valid here (if not valid return false)
+            disableAutomaticMode();
+            nextStep = command;
+            return false;
+        } else {
+            if (currentStep.equals("")) {
+                //Check if valid here (if not valid, return false)
+                currentStep = command;
+                return true;
+            } else if (nextStep.equals("")) {
+                //Check if valid here (if not valid, return false)
+                nextStep = command;
+                return false;
+            } else {
+                return false;
+            }
+        }
+    }
 
 
     //================================================================================
@@ -1241,7 +1228,9 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
                         gridView.displayUntraversedRoute(routeToInt.subList(stepNumberInt, getNthIndex(routeNumber)));
                     } else {
                         // Else clear the GridView and enable menu items again
+                        currentStep = "";
                         disableAutomaticMode();
+
                     }
             }
             stepNumberString++;
@@ -1255,8 +1244,14 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
      */
     private void transmitNextStep() {
         if (stepNumberString != routeToString.size()) {
+
             currentStep = routeToString.get(stepNumberString);
-            nextStep = routeToString.get(stepNumberString + 1);
+
+            if (stepNumberString != routeToString.size() - 1) {
+                nextStep = routeToString.get(stepNumberString + 1);
+            } else {
+                nextStep = "";
+            }
 
             // If the current step is to pick an object up, skip this step (this step is only used internally and not
             // by the boebot itself)

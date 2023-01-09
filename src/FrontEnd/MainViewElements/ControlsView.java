@@ -34,22 +34,23 @@ public class ControlsView {
         buttonForward.setMaxWidth(Double.MAX_VALUE);
         Button buttonPlaceObject = new Button("Place object");
         buttonPlaceObject.setMaxWidth(Double.MAX_VALUE);
-        Button buttonResume = new Button("Resume");
-        buttonResume.setMaxWidth(Double.MAX_VALUE);
+        Button emergencyBreak = new Button("Emergency break");
+        emergencyBreak.setMaxWidth(Double.MAX_VALUE);
+        emergencyBreak.setDefaultButton(true);
 
         // Set basic format of the main Layout
         mainLayout = new VBox();
         mainLayout.setSpacing(10);
 
         // Add all buttons to the mainLayout
-        mainLayout.getChildren().addAll(buttonForward, turnControls, buttonPlaceObject, buttonResume);
+        mainLayout.getChildren().addAll(buttonForward, turnControls, buttonPlaceObject, emergencyBreak);
 
         // Buttons functionality
         buttonForward.setOnAction(e -> callback.onBluetoothReceiveEvent("Application: Forward"));
         buttonTurnLeft.setOnAction(e -> callback.onBluetoothReceiveEvent("Application: Left"));
         buttonTurnRight.setOnAction(e -> callback.onBluetoothReceiveEvent("Application: Right"));
         buttonPlaceObject.setOnAction(e -> callback.onBluetoothReceiveEvent("Application: Place"));
-        buttonResume.setOnAction(e -> callback.onBluetoothReceiveEvent("Application: Resume"));
+        emergencyBreak.setOnAction(e -> callback.onBluetoothReceiveEvent("Application: Brake"));
     }
 
     /**

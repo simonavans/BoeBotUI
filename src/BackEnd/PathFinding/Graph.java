@@ -2,7 +2,7 @@ package BackEnd.PathFinding;
 
 import java.util.HashMap;
 
-public abstract class Graph {
+abstract class Graph {
 
     private HashMap<String, Node> nodes = new HashMap<>(); // list of nodes in this graph
 
@@ -45,7 +45,7 @@ public abstract class Graph {
      *
      * @author Kerr
      */
-    public void addObstruction(int x, int y) {this.getNode(x, y).addObstruction();}
+    void addObstruction(int x, int y) {this.getNode(x, y).addObstruction();}
 
     /**
      * Remove an obstruction on a node given its x and y value.
@@ -54,7 +54,7 @@ public abstract class Graph {
      *
      * @author Kerr
      */
-    public void removeObstruction(int x, int y) {this.getNode(x, y).removeObstruction();}
+    void removeObstruction(int x, int y) {this.getNode(x, y).removeObstruction();}
 
 
     /**
@@ -62,7 +62,7 @@ public abstract class Graph {
      *
      * @author Kerr
      */
-    public void resetObstructions() {
+    void resetObstructions() {
         for (Node node : nodes.values()) {
             node.removeObstruction();
         }

@@ -254,7 +254,7 @@ public class GridView {
      *
      * @author Kerr
      */
-    public void displayUntraversedRoute(List<int[]> route) { //TODO fix this method
+    public void displayUntraversedRoute(List<int[]> route) {
         resetLineSegments();
         for (int i = 0; i < route.size() - 1; i++) {
             int x1 = route.get(i)[0];

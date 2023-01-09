@@ -12,7 +12,6 @@ public class BluetoothConnection {
 
     private MainView callback;
     private SerialPort serialPort;
-    private boolean isDisabled = false;
     private boolean isConnected = false;
 
     private String receivedCommand = "";
@@ -77,35 +76,7 @@ public class BluetoothConnection {
         }
     }
 
-    /**
-     * Method that enables the bluetooth connection.
-     *
-     * @author Kerr
-     */
-    public void enableBluetooth() {
-        this.isDisabled = false;
-    }
-
-
     // Transmit methods
-
-    /**
-     * Method that sends a signal over bluetooth and then disables the bluetooth connection.
-     * Caution: the 'break' button will always function!
-     * @param command command that will be send over bluetooth
-     *
-     * @author Kerr
-     */
-    public void sendManualControl(String command) {
-        if (!isDisabled) {
-
-            // Permanent print statement to monitor bluetooth
-            System.out.println("[sendManualControl] " + "Application: " + command);
-
-            sendCommand("Application: " + command);
-        }
-        isDisabled = true;
-    }
 
     /**
      * Method that sends a signal over bluetooth.
@@ -113,23 +84,15 @@ public class BluetoothConnection {
      *
      * @author Kerr
      */
-    public void sendAutomaticControl(String command) {
+    public void transmitCommand(String command) {
         // Permanent print statement to monitor bluetooth
-        System.out.println("[sendAutomaticControl] " + "Application: " + command);
+        System.out.println("[transmitCommand] " + "Application: " + command);
 
-        sendCommand("Application: " + command);
-    }
-
-    /**
-     * Helper method that a given command + prefix over bluetooth
-     * @param command prefix + command that will be send over bluetooth
-     */
-    private void sendCommand(String command) {
-            try {
-                serialPort.writeString(command);
-            } catch (SerialPortException e) {
-                e.printStackTrace();
-            }
+        try {
+            serialPort.writeString("Application: " + command);
+        } catch (SerialPortException e) {
+            e.printStackTrace();
+        }
     }
 
     // Receive methods
