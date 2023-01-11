@@ -1,6 +1,6 @@
-package backEnd;
+package backend;
 
-import frontEnd.MainView;
+import frontend.MainView;
 import javafx.application.Platform;
 import jssc.*;
 

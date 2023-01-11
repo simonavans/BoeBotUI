@@ -1,4 +1,4 @@
-package frontEnd.mainViewElements;
+package frontend.mainviewelements;
 
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;

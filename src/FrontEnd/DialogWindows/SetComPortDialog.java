@@ -1,6 +1,6 @@
-package frontEnd.dialogWindows;
+package frontend.dialogwindows;
 
-import frontEnd.MainView;
+import frontend.MainView;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.scene.control.*;

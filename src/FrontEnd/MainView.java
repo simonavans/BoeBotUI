@@ -1,16 +1,16 @@
-package frontEnd;
+package frontend;
 
-import backEnd.Bluetooth;
-import backEnd.Object;
-import backEnd.Obstruction;
-import backEnd.pathFinding.Grid;
-import backEnd.pathFinding.PathFinder;
+import backend.Bluetooth;
+import backend.Object;
+import backend.Obstruction;
+import backend.pathFinding.Grid;
+import backend.pathFinding.PathFinder;
 import callbacks.*;
-import frontEnd.mainViewElements.*;
-import frontEnd.dialogWindows.ObjectDialog;
-import frontEnd.dialogWindows.ObstructionDialog;
-import frontEnd.dialogWindows.SetComPortDialog;
-import frontEnd.dialogWindows.SettingsDialog;
+import frontend.mainviewelements.*;
+import frontend.dialogwindows.ObjectDialog;
+import frontend.dialogwindows.ObstructionDialog;
+import frontend.dialogwindows.SetComPortDialog;
+import frontend.dialogwindows.SettingsDialog;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -149,16 +149,21 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
         mainView.setCenter(grid);
 
         // Set right layout
+
+        Image imageLogo = new Image("file:Logo Avans Hogeschool.png");
+        ImageView imageViewLogo = new ImageView(imageLogo);
+        imageViewLogo.setTranslateY(80);
+
         VBox rightLayout = new VBox();
         rightLayout.setAlignment(Pos.TOP_CENTER);
         rightLayout.setSpacing(40);
-        rightLayout.getChildren().addAll(controls, legend);
+        rightLayout.getChildren().addAll(controls, legend, imageViewLogo);
         mainView.setRight(rightLayout);
         BorderPane.setMargin(rightLayout, new Insets(50));
 
         // Set bottom layout
         holdingUpdate = new Text("The boebot is currently not holding an object");
-        holdingUpdate.setTranslateY(-65);
+        holdingUpdate.setTranslateY(-90);
         holdingUpdate.setTranslateX(480);
 
         double width = holdingUpdate.prefWidth(-1);

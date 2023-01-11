@@ -1,6 +1,6 @@
 package callbacks;
 
-import backEnd.Obstruction;
+import backend.Obstruction;
 
 public interface ObstructionListCallback {
     void onAddObstructionEvent();

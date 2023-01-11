@@ -1,7 +1,7 @@
-package frontEnd.mainViewElements;
+package frontend.mainviewelements;
 
 
-import frontEnd.MainView;
+import frontend.MainView;
 import javafx.geometry.VPos;
 import javafx.scene.Group;
 
@@ -62,7 +62,7 @@ public class GridView {
         int resolutionPX = 1200;
         int resolutionPY = 1000;
         int gridSize = 42;
-        int gridYShift = 320;
+        int gridYShift = 400;
         int gridXShift = 700;
 
         this.gridWidth = callback.getSettingsDialog().gridWidth;

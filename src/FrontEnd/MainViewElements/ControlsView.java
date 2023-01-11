@@ -1,6 +1,6 @@
-package frontEnd.mainViewElements;
+package frontend.mainviewelements;
 
-import frontEnd.MainView;
+import frontend.MainView;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;

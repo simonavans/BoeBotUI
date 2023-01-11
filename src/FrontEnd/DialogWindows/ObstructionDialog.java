@@ -1,7 +1,7 @@
-package frontEnd.dialogWindows;
+package frontend.dialogwindows;
 
-import backEnd.Obstruction;
-import frontEnd.MainView;
+import backend.Obstruction;
+import frontend.MainView;
 import javafx.event.ActionEvent;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;

@@ -1,4 +1,4 @@
-package backEnd;
+package backend;
 
 /**
  * Data model class for the table view of the list of obstructions
