@@ -1,4 +1,4 @@
-package backend.pathFinding;
+package backend.pathfinding;
 
 import backend.Object;
 import backend.Obstruction;
