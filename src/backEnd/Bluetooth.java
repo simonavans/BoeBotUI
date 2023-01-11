@@ -1,6 +1,6 @@
-package BackEnd;
+package backEnd;
 
-import FrontEnd.MainView;
+import frontEnd.MainView;
 import javafx.application.Platform;
 import jssc.*;
 
@@ -8,7 +8,7 @@ import jssc.*;
  * Class that controls the bluetooth connection with the boebot
  * Created with help from https://www.codeproject.com/Tips/801262/Sending-and-receiving-strings-from-COM-port-via-jS
  */
-public class BluetoothConnection {
+public class Bluetooth {
 
     private MainView callback;
     private SerialPort serialPort;
@@ -16,14 +16,26 @@ public class BluetoothConnection {
 
     private String receivedCommand = "";
 
+    // Bluetooth commands
+    public final String MOVE_FORWARD = "Forward";
+    public final String MOVE_LEFT = "Left";
+    public final String MOVE_RIGHT = "Right";
+    public final String MOVE_BREAK = "Brake";
+    public final String MOVE_PLACE = "Place";
+    public final String COMAND_RESUME = "Resume";
+    public final String COMMAND_DISALLOWED = "Disallowed";
+    public final String COMMAND_SUCCEEDED = "Succeeded";
+    public final String OBJECT_SPOTTED = "Object";
+    public final String OBJECT_UNKNOWN = "Uncharted";
+
     /**
-     * Constructor of the class BluetoothConnection that is responsible for receiving and transmitting data over
+     * Constructor of the class Bluetooth that is responsible for receiving and transmitting data over
      * bluetooth using a bluetooth module on the roboto
      * @param callback class to which the method should callback
      *
      * @author Kerr
      */
-    public BluetoothConnection(MainView callback) {
+    public Bluetooth(MainView callback) {
         this.callback = callback;
     }
 
@@ -86,10 +98,10 @@ public class BluetoothConnection {
      */
     public void transmitCommand(String command) {
         // Permanent print statement to monitor bluetooth
-        System.out.println("[transmitCommand] " + "Application: " + command);
+        System.out.println("[transmitCommand] " + command);
 
         try {
-            serialPort.writeString("Application: " + command);
+            serialPort.writeString(command);
         } catch (SerialPortException e) {
             e.printStackTrace();
         }
@@ -131,7 +143,7 @@ public class BluetoothConnection {
                 try {
                     String receivedData = serialPort.readString(event.getEventValue());
                     receivedCommand += receivedData;
-                    Platform.runLater(BluetoothConnection.this::receiveCommand);
+                    Platform.runLater(Bluetooth.this::receiveCommand);
                 } catch (SerialPortException ex) {
                     System.out.println("Error in receiving string from COM-port: " + ex);
                 }

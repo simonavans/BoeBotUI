@@ -1,20 +1,21 @@
-package FrontEnd;
+package frontEnd;
 
-import BackEnd.BluetoothConnection;
-import BackEnd.Object;
-import BackEnd.Obstruction;
-import BackEnd.PathFinding.Grid;
-import BackEnd.PathFinding.PathFinder;
-import Callbacks.*;
-import FrontEnd.MainViewElements.*;
-import FrontEnd.DialogWindows.ObjectDialog;
-import FrontEnd.DialogWindows.ObstructionDialog;
-import FrontEnd.DialogWindows.SetComPortDialog;
-import FrontEnd.DialogWindows.SettingsDialog;
+import backEnd.Bluetooth;
+import backEnd.Object;
+import backEnd.Obstruction;
+import backEnd.pathFinding.Grid;
+import backEnd.pathFinding.PathFinder;
+import callbacks.*;
+import frontEnd.mainViewElements.*;
+import frontEnd.dialogWindows.ObjectDialog;
+import frontEnd.dialogWindows.ObstructionDialog;
+import frontEnd.dialogWindows.SetComPortDialog;
+import frontEnd.dialogWindows.SettingsDialog;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.VPos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.MenuBar;
@@ -24,51 +25,29 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
 import java.util.Optional;
-
-//================================================================================
-// Notes
-//================================================================================
-
-// The boebot as three use cases: full automatic, semi automatic, manual -> check all three
 
 
 //================================================================================
 // MUST FIX
 //================================================================================
 
+
 //TODO must haves:
-// add textual updates (new class should be created)
+// unify bluetooth commands;
 // don't allow boebot to crash into objects when giving instructions
 // Deal with unknown object
-// unify bluetooth commands;
 
 //TODO mayor bugs:
-// First bluetooth command in an automatic route is send twice
+// -
 
 //TODO minor bugs:
 // Sorting the TableView with more than 10 objects results in the order Object 1, object 10, object 11, object 2 etc.
-// Maybe: add a resume button in the application?
 // Fix close request on splash screen
-// Obstruction list in wrong order -> as far as I know this is no longer a bug, but keep tracking this
-
-//================================================================================
-// COULD FIX
-//================================================================================
-
-//TODO - possible improvements
-// make "Pickup" a valid step
-//TODO how to resume after a break when in the middle of a turn? -> currently we just close the application
-
-//TODO 'fun'ctionality:
-// Make it possible to have the user change the order of objects so the boebot picks them up in a different order
-// add path preview
-// add boebot settings
-// Make application somewhat resolution independent
-// connect legend to GridView
 
 public class MainView extends Application implements SettingsCallback, ObjectListCallback, ObstructionListCallback, bluetoothCallback {
 
@@ -91,7 +70,7 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
     // Create the back end instances
     private Grid grid = new Grid(this);
     private PathFinder pathfinder = new PathFinder(this);
-    private BluetoothConnection bluetoothConnection = new BluetoothConnection(this);
+    private Bluetooth bluetooth = new Bluetooth(this);
 
     // Automatic controls
     private ArrayList<int[]> routeToInt = new ArrayList<>();
@@ -105,6 +84,7 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
     private String nextStep = "";
     private boolean inAutomaticMode = false;
     private Object holding = null;
+    private Text holdingUpdate;
 
 
     //================================================================================
@@ -177,7 +157,15 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
         BorderPane.setMargin(rightLayout, new Insets(50));
 
         // Set bottom layout
-        // mainView.setBottom();
+        holdingUpdate = new Text("The boebot is currently not holding an object");
+        holdingUpdate.setTranslateY(-65);
+        holdingUpdate.setTranslateX(480);
+
+        double width = holdingUpdate.prefWidth(-1);
+        holdingUpdate.setX(width / 2);
+        holdingUpdate.setTextOrigin(VPos.CENTER);
+
+        mainView.setBottom(holdingUpdate);
 
         // Set the stage
         Scene scene = new Scene(mainView);
@@ -193,7 +181,7 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
      */
     @Override
     public void stop() {
-        if (bluetoothConnection.isConnected()) bluetoothConnection.closePort();
+        if (bluetooth.isConnected()) bluetooth.closePort();
     }
 
 
@@ -248,8 +236,8 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
      *
      * @author Kerr
      */
-    public BluetoothConnection getBluetoothConnection() {
-        return bluetoothConnection;
+    public Bluetooth getBluetooth() {
+        return bluetooth;
     }
 
 
@@ -351,7 +339,7 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
 
 
     //================================================================================
-    // Callbacks - Settings
+    // callbacks - Settings
     //================================================================================
 
 
@@ -400,7 +388,7 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
     }
 
     //================================================================================
-    // Callbacks - Adding, editing and deleting objects
+    // callbacks - Adding, editing and deleting objects
     //================================================================================
 
 
@@ -479,13 +467,9 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
      * @author Kerr
      */
     private void editObject(int locationX, int locationY, int destinationX, int destinationY, Object object) {
-
-        //TODO see if it is possible to update the object, instead of deleting it.
-        gridView.deletePointOfInterest(object.getLocationX(), object.getLocationY());
-        gridView.deletePointOfInterest(object.getDestinationX(), object.getDestinationY());
-
-        gridView.markObjectLocation(locationX, locationY, object.getLabel().split(" ")[1] + "A");
-        gridView.markObjectDestination(destinationX, destinationY, object.getLabel().split(" ")[1] + "B");
+        // Update the gridView
+        gridView.editPointOfInterest(object.getLocationX(), object.getLocationY(), locationX, locationY);
+        gridView.editPointOfInterest(object.getDestinationX(), object.getDestinationY(), destinationX, destinationY);
 
         // Update the tableView
         object.setLocationX(locationX);
@@ -654,12 +638,12 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
             gridView.displayUntraversedRoute(routeToInt.subList(stepNumberInt, getNthIndex(routeNumber)));
 
             // transmit the first step
-            transmitNextStep(); //TODO fix problem with this (sends first command twice)
+            transmitNextStep();
         }
     }
 
     //================================================================================
-    // Callbacks - Adding, editing, deleting and converting obstructions
+    // callbacks - Adding, editing, deleting and converting obstructions
     //================================================================================
 
     /**
@@ -738,11 +722,8 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
      * @author Kerr
      */
     private void editObstruction(int locationX, int locationY, Obstruction obstruction) {
-
-        //TODO see if it is possible to update the object, instead of deleting it.
-        gridView.deletePointOfInterest(obstruction.getLocationX(), obstruction.getLocationY());
-
-        gridView.markObstructionLocation(locationX, locationY, "X" + obstruction.getLabel().split(" ")[1]);
+        // Update the gridView
+        gridView.editPointOfInterest(obstruction.getLocationX(), obstruction.getLocationY(), locationX, locationY);
 
         // Update the tableView
         obstruction.setLocationX(locationX);
@@ -873,44 +854,18 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
 
 
     //================================================================================
-    // Callbacks - Receiving and transmitting bluetooth signals
+    // callbacks - Receiving and transmitting bluetooth signals
     //================================================================================
 
     /**
-     * Send an command to the boebot over bluetooth. This will NOT disable sending other commands over bluetooth and will
-     * always be active
+     * Send an command to the boebot over bluetooth, giving it the prefix "Application"
      * @param command command that should be send over bluetooth
      *
      * @author Kerr
      */
     @Override
     public void onBluetoothTransmitEvent(String command) {
-
-        //TODO consider deleting switch statement
-
-        switch (command) {
-            case "Brake":
-                bluetoothConnection.transmitCommand("Brake");
-                break;
-            case "Uncharted":
-                bluetoothConnection.transmitCommand("Uncharted");
-                break;
-            case "Disallowed":
-                bluetoothConnection.transmitCommand("Disallowed");
-                break;
-            case "Forward":
-                bluetoothConnection.transmitCommand("Forward");
-                break;
-            case "Left":
-                bluetoothConnection.transmitCommand("Left");
-                break;
-            case "Right":
-                bluetoothConnection.transmitCommand("Right");
-                break;
-            case "Place":
-                bluetoothConnection.transmitCommand("Place");
-                break;
-        }
+        bluetooth.transmitCommand("Application: " + command);
     }
 
     /**
@@ -993,19 +948,37 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
                 Platform.exit();
                 break;
             case "Resume":
-                if (validateCommand(command)) {onStartRouteEvent();}
+
+                if (validateResume()) {
+                    if(validateCommand(command)) {
+                        onStartRouteEvent();
+                    }
+                }
+
                 break;
             case "Forward":
-                if (validateCommand(command)) {onBluetoothTransmitEvent("Forward");}
+
+                if (validateForward()) {
+                    if(validateCommand(command)) {
+                        onBluetoothTransmitEvent(command);
+                    }
+                }
+
                 break;
             case "Left":
-                if (validateCommand(command)) {onBluetoothTransmitEvent("Left");}
+                if (validateCommand(command)) {onBluetoothTransmitEvent(command);}
                 break;
             case "Right":
-                if (validateCommand(command)) {onBluetoothTransmitEvent("Right");}
+                if (validateCommand(command)) {onBluetoothTransmitEvent(command);}
                 break;
             case "Place":
-                if (validateCommand(command)) {onBluetoothTransmitEvent("Place");}
+
+                if (validatePlace()) {
+                    if(validateCommand(command)) {
+                        onBluetoothTransmitEvent(command);
+                    }
+                }
+
                 break;
         }
     }
@@ -1028,6 +1001,9 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
 
         // Remove the object location from the gridView
         gridView.deletePointOfInterest(object.getLocationX(), object.getLocationY());
+
+        // Update the status label
+        holdingUpdate.setText("    The boebot is currently holding " + object.getLabel());
     }
 
     /**
@@ -1104,6 +1080,9 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
         // Change the location of the boebot in the settings
         getSettingsDialog().boebotX = locationX - settingsDialog.boebotVX;
         getSettingsDialog().boebotY = locationY - settingsDialog.boebotVY;
+
+        // Update the status label
+        holdingUpdate.setText("The boebot is currently not holding an object");
     }
 
 
@@ -1112,45 +1091,75 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
     //================================================================================
 
 
-    // TODO do not allow the boebot to place an object if there is an object behind it
-    // TODO split this method into multiple parts for each command
-    // TODO the validation of the resume command should just be that the boebot must be in automatic mode and the queue should not be full, else add it to the first or second position in the queue
-
     /**
-     * Method that validates if a certain command is legal. A command is considered illegal if it will cause the robot
-     * to hit or displace an object or obstruction when it should not or if it will cause the robot to go off the grid.
+     * Method that adds the given command to the queue of command. If there are no commands in the queue return true.
+     * If there is a command in the queue add it as a next step. If the next step is also taken, do not do
+     * anything and send a signal to the boebot that the command has failed.
      * @param command command that will be validated for 'legality'
-     * @return If an command is legal and the command queue is not full (< 2 commands) = true, else = false
+     * @return true = the command should be transmitted now, false = the command should not or not immediately be transmitted
      *
      * @author Kerr
      */
     private boolean validateCommand(String command) {
-        // Steps
-        // - validate if step is allowed:
-        // if current step == "" -> validate is command is allowed and set command as current step + perform step
-        // if current step != "" -> check if next step == "" -> validate command and set command as next step
-        // if current step != "" -> check if next step != "" -> send "Disallowed" command to boebot and ignore
-
-        // Do not forget enable/disable automatic mode!
-
+        // If the robot is in automatic mode, add the command to the queue and disable automatic mode
         if (inAutomaticMode) {
-            //Check if valid here (if not valid return false)
             disableAutomaticMode();
             nextStep = command;
-            return false;
         } else {
+            // If there is no command in the queue, make the command the current step and send it over bluetooth
             if (currentStep.equals("")) {
-                //Check if valid here (if not valid, return false)
                 currentStep = command;
                 return true;
             } else if (nextStep.equals("")) {
-                //Check if valid here (if not valid, return false)
+                // If there is a command in the queue, but no next step, add the command to the next step
                 nextStep = command;
-                return false;
+                // Else, return that the command has failed.
             } else {
-                return false;
+                onBluetoothTransmitEvent("Disallowed");
             }
         }
+        return false;
+    }
+
+    // TODO the validation of the resume command should just be that the boebot must not be in automatic mode and the queue should not be full, else add it to the first or second position in the queue
+
+    /**
+     * Method that validates if resuming a route is legal.
+     * @return true = the command is legal, false the command is not legal
+     *
+     * @author Kerr
+     */
+    private boolean validateResume() {
+//        onBluetoothTransmitEvent("Disallowed");
+        return true;
+    }
+
+    /**
+     * Method that checks if moving the robot forward is a legal command. A command is considered illegal if it will
+     * cause the robot to hit or displace an object or obstruction when it should not or if it will cause the robot to go
+     * off the grid.
+     * @return true = the command is legal, false the command is not legal
+     *
+     * @author Kerr
+     */
+    private boolean validateForward() {
+//        onBluetoothTransmitEvent("Disallowed");
+        return  true;
+    }
+
+    // TODO do not allow the boebot to place an object if there is an object behind it
+
+    /**
+     * Method that checks if placing an object here is a legal command. A command is considered illegal if it will
+     * cause the robot to hit or displace an object or obstruction when it should not or if it will cause the robot to go
+     * off the grid.
+     * @return true = the command is legal, false the command is not legal
+     *
+     * @author Kerr
+     */
+    private boolean validatePlace() {
+//        onBluetoothTransmitEvent("Disallowed");
+        return true;
     }
 
 

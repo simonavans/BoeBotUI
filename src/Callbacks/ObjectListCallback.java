@@ -1,6 +1,6 @@
-package Callbacks;
+package callbacks;
 
-import BackEnd.Object;
+import backEnd.Object;
 
 public interface ObjectListCallback {
     void onAddObjectEvent();

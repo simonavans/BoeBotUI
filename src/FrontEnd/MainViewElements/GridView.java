@@ -1,7 +1,7 @@
-package FrontEnd.MainViewElements;
+package frontEnd.mainViewElements;
 
 
-import FrontEnd.MainView;
+import frontEnd.MainView;
 import javafx.geometry.VPos;
 import javafx.scene.Group;
 
@@ -359,6 +359,27 @@ public class GridView {
     public void deletePointOfInterest(int x, int y) {
         mainLayout.getChildren().remove(pointsOfInterestLocations.get(x + "-" + y));
         pointsOfInterestLocations.remove(x + "-" + y);
+    }
+
+
+    /**
+     * Moves a given point of interest from one location to another
+     * @param currentX the current x location of the point of interest
+     * @param currentY the current y location of the point of interest
+     * @param newX  the x location to where the point of interest should be moved
+     * @param newY the y location to where the point of interest should be moved
+     *
+     * @author Kerr
+     */
+    public void editPointOfInterest(int currentX, int currentY, int newX, int newY) {
+        Group group = pointsOfInterestLocations.get(currentX + "-" + currentY);
+
+        ((Circle) group.getChildren().get(0)).setCenterX(convertXtoPX(newX));
+        ((Circle) group.getChildren().get(0)).setCenterY(convertYtoPY(newY));
+
+        Text text = ((Text) group.getChildren().get(1));
+        text.setX((convertXtoPX(newX) - text.prefWidth(-1) / 2));
+        text.setY(convertYtoPY(newY));
     }
 
     /**

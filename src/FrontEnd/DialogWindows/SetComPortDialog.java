@@ -1,6 +1,6 @@
-package FrontEnd.DialogWindows;
+package frontEnd.dialogWindows;
 
-import FrontEnd.MainView;
+import frontEnd.MainView;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.scene.control.*;
@@ -58,7 +58,7 @@ public class SetComPortDialog {
                 event.consume();
             } else {
                 callback.getSettingsDialog().comPort = Integer.parseInt(comboBox.getValue().charAt(comboBox.getValue().length() - 1) + "");
-                if(!callback.getBluetoothConnection().openPort()) {
+                if(!callback.getBluetooth().openPort()) {
                     callback.displayError("Failed to connect bluetooth. It is recommended to select a different COM port or to make sure the bluetooth module is correctly paired to your PC.");
                     event.consume();
                 }

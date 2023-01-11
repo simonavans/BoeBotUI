@@ -1,4 +1,4 @@
-package Callbacks;
+package callbacks;
 
 public interface SettingsCallback {
     void onSettingsEvent();

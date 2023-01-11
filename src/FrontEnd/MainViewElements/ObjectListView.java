@@ -1,7 +1,7 @@
-package FrontEnd.MainViewElements;
+package frontEnd.mainViewElements;
 
-import BackEnd.Object;
-import FrontEnd.MainView;
+import backEnd.Object;
+import frontEnd.MainView;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;

@@ -1,4 +1,4 @@
-package Callbacks;
+package callbacks;
 
 public interface bluetoothCallback {
     void onBluetoothTransmitEvent(String command);;

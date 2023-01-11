@@ -1,6 +1,6 @@
-package FrontEnd.MainViewElements;
+package frontEnd.mainViewElements;
 
-import FrontEnd.MainView;
+import frontEnd.MainView;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;

@@ -1,4 +1,4 @@
-package BackEnd.PathFinding;
+package backEnd.pathFinding;
 
 import java.util.HashMap;
 

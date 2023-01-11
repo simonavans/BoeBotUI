@@ -1,6 +1,6 @@
-package BackEnd.PathFinding;
+package backEnd.pathFinding;
 
-import FrontEnd.MainView;
+import frontEnd.MainView;
 
 /**
  * Superclass that defines a graph: a collection of connected nodes. A graph consists of an ArrayList of nodes. Each

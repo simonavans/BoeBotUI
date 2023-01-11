@@ -1,4 +1,4 @@
-package BackEnd;
+package backEnd;
 
 /**
  * Data model class for the table view of the list of objects and their location destination.

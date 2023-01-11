@@ -1,8 +1,8 @@
-package BackEnd.PathFinding;
+package backEnd.pathFinding;
 
-import BackEnd.Object;
-import BackEnd.Obstruction;
-import FrontEnd.MainView;
+import backEnd.Object;
+import backEnd.Obstruction;
+import frontEnd.MainView;
 import javafx.collections.ObservableList;
 
 import java.util.ArrayList;
