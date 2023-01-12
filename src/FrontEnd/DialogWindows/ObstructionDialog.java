@@ -1,7 +1,7 @@
 package frontend.dialogwindows;
 
 import backend.Obstruction;
-import frontend.MainView;
+import frontend.ApplicationMain;
 import javafx.event.ActionEvent;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public class ObstructionDialog {
 
-    private MainView callback;
+    private ApplicationMain callback;
     private Dialog<int[]> mainDialog;
     private GridPane mainAddLayout;
     private GridPane mainEditLayout;
@@ -25,7 +25,7 @@ public class ObstructionDialog {
      * @author Kerr
      */
     @SuppressWarnings("unchecked") // All casts are manual and do not cause issues
-    public ObstructionDialog(MainView callback) {
+    public ObstructionDialog(ApplicationMain callback) {
 
         // Set the callback
         this.callback = callback;

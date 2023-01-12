@@ -1,16 +1,17 @@
 package frontend;
 
-import backend.Bluetooth;
+import backend.*;
 import backend.Object;
-import backend.Obstruction;
 import backend.pathfinding.Grid;
 import backend.pathfinding.PathFinder;
 import callbacks.*;
 import frontend.mainviewelements.*;
+
 import frontend.dialogwindows.ObjectDialog;
 import frontend.dialogwindows.ObstructionDialog;
 import frontend.dialogwindows.SetComPortDialog;
 import frontend.dialogwindows.SettingsDialog;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -38,18 +39,23 @@ import java.util.Optional;
 
 
 //TODO must haves:
-// unify bluetooth commands;
 // don't allow boebot to crash into objects when giving instructions
 // Deal with unknown object
 
 //TODO mayor bugs:
-// -
+// When there are command in the queue, do not allow the user to add or edit anything (just disable all buttons)
+// If object is placed on destination of another object, turn it into an obstruction as well
+// What if an unknown object is spotted at an destination of another object?
 
 //TODO minor bugs:
 // Sorting the TableView with more than 10 objects results in the order Object 1, object 10, object 11, object 2 etc.
 // Fix close request on splash screen
+// Fix error on remote: Brake command
 
-public class MainView extends Application implements SettingsCallback, ObjectListCallback, ObstructionListCallback, bluetoothCallback {
+//TODO minor improvements
+// unify bluetooth commands;
+
+public class ApplicationMain extends Application implements SettingsCallback, ObjectListCallback, ObstructionListCallback, bluetoothCallback {
 
     // Create the settings instance
     private SettingsDialog settingsDialog = new SettingsDialog(this,8, 8, 0, 0, 1, 0, 40, 20);
@@ -93,7 +99,7 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
 
 
     public static void main(String[] args) {
-        Application.launch(MainView.class);
+        Application.launch(ApplicationMain.class);
     }
 
 
@@ -150,7 +156,7 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
 
         // Set right layout
 
-        Image imageLogo = new Image("file:Logo Avans Hogeschool.png");
+        Image imageLogo = new Image("file:logoAvans.png");
         ImageView imageViewLogo = new ImageView(imageLogo);
         imageViewLogo.setTranslateY(80);
 
@@ -882,6 +888,7 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
     @Override
     public void onBluetoothReceiveEvent(String receivedCommand) {
 
+        String source = receivedCommand.split(" ")[0].substring(0, receivedCommand.split(" ")[0].length() - 1);
         String command = receivedCommand.split(" ")[1];
 
         switch (command) {
@@ -947,10 +954,15 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
                 displayError("An unknown obstruction was found at (" + obstructionX + ", " + obstructionY + "), the boebot has stopped.\nPlease press RESUME on the remote, or 'Start Route' in the application to continue.");
 
             case "Brake":
-                onBluetoothTransmitEvent(command);
+
+                if (!source.equals("Remote")) {
+                    onBluetoothTransmitEvent(command);
+                }
+
                 disableAutomaticMode();
                 displayError("Emergency break engaged. The boebot can no longer continue. Please restart the application and place the boebot in its starting position.");
                 Platform.exit();
+
                 break;
             case "Resume":
 
@@ -1151,8 +1163,6 @@ public class MainView extends Application implements SettingsCallback, ObjectLis
 //        onBluetoothTransmitEvent("Disallowed");
         return  true;
     }
-
-    // TODO do not allow the boebot to place an object if there is an object behind it
 
     /**
      * Method that checks if placing an object here is a legal command. A command is considered illegal if it will

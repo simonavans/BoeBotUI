@@ -2,7 +2,7 @@ package backend.pathfinding;
 
 import backend.Object;
 import backend.Obstruction;
-import frontend.MainView;
+import frontend.ApplicationMain;
 import javafx.collections.ObservableList;
 
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import java.util.ArrayList;
  */
 public class PathFinder {
 
-    private MainView callback;
+    private ApplicationMain callback;
     private Graph grid;
 
     private int startX;
@@ -34,7 +34,7 @@ public class PathFinder {
      *
      * @author Kerr
      */
-    public PathFinder(MainView callback) {
+    public PathFinder(ApplicationMain callback) {
         this.callback = callback;
         updateGrid();
         updateStartLocation();

@@ -1,6 +1,6 @@
 package backend.pathfinding;
 
-import frontend.MainView;
+import frontend.ApplicationMain;
 
 /**
  * Superclass that defines a graph: a collection of connected nodes. A graph consists of an ArrayList of nodes. Each
@@ -11,7 +11,7 @@ public class Grid extends Graph {
 
     private int width;
     private int height;
-    private MainView callback;
+    private ApplicationMain callback;
 
     /**
      * Construct a grid shaped Graph given a width and height. all nodes are connected to their neighboring nodes
@@ -21,7 +21,7 @@ public class Grid extends Graph {
      *
      * @author Kerr
      */
-    public Grid(MainView callback) {
+    public Grid(ApplicationMain callback) {
         super();
         this.callback = callback;
         updateGrid();

@@ -1,7 +1,7 @@
 package frontend.dialogwindows;
 
 import backend.Object;
-import frontend.MainView;
+import frontend.ApplicationMain;
 import javafx.event.ActionEvent;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public class ObjectDialog {
 
-    private MainView callback;
+    private ApplicationMain callback;
     private Dialog<int[]> mainDialog;
     private GridPane mainLayout;
     private Object object;
@@ -22,7 +22,7 @@ public class ObjectDialog {
      * @author Kerr
      */
     @SuppressWarnings("unchecked") // All casts are manual and do not cause issues
-    public ObjectDialog(MainView callback) {
+    public ObjectDialog(ApplicationMain callback) {
 
         // Set the callback
         this.callback = callback;

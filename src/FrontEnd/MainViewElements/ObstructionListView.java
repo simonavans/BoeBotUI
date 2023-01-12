@@ -1,7 +1,7 @@
 package frontend.mainviewelements;
 
 import backend.Obstruction;
-import frontend.MainView;
+import frontend.ApplicationMain;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
@@ -32,7 +32,7 @@ public class ObstructionListView {
      *
      * @author Kerr
      */
-    public ObstructionListView(MainView callback) {
+    public ObstructionListView(ApplicationMain callback) {
 
         // Create three buttons for adding, editing, deleting Obstructions
         this.addButton = new Button("Add");

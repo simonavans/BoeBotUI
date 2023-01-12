@@ -1,7 +1,7 @@
 package frontend.mainviewelements;
 
 import backend.Object;
-import frontend.MainView;
+import frontend.ApplicationMain;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
@@ -35,7 +35,7 @@ public class ObjectListView {
      *
      * @author Kerr
      */
-    public ObjectListView(MainView callback) {
+    public ObjectListView(ApplicationMain callback) {
 
         // Create four buttons for adding, editing, deleting objects and starting a route
         this.addButton = new Button("Add");

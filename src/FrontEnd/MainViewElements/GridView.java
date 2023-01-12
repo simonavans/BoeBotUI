@@ -1,7 +1,7 @@
 package frontend.mainviewelements;
 
 
-import frontend.MainView;
+import frontend.ApplicationMain;
 import javafx.geometry.VPos;
 import javafx.scene.Group;
 
@@ -25,7 +25,7 @@ import java.util.List;
 public class GridView {
 
     private Pane mainLayout = new Pane();
-    private MainView callback;
+    private ApplicationMain callback;
 
     private HashMap<String, Line> lineSegments = new HashMap<>(); // Collection of all line segments of the grid
     private HashMap<String, Group> pointsOfInterestLocations = new HashMap<>(); // Collection of all PoI of the grid (objects, destinations obstructions)
@@ -45,7 +45,7 @@ public class GridView {
      * @param callback class to which the method should callback
      * @author Kerr
      */
-    public GridView(MainView callback) {
+    public GridView(ApplicationMain callback) {
         this.callback = callback;
         updateGrid();
         generateGridView();

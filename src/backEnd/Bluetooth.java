@@ -1,6 +1,6 @@
 package backend;
 
-import frontend.MainView;
+import frontend.ApplicationMain;
 import javafx.application.Platform;
 import jssc.*;
 
@@ -10,23 +10,11 @@ import jssc.*;
  */
 public class Bluetooth {
 
-    private MainView callback;
+    private ApplicationMain callback;
     private SerialPort serialPort;
     private boolean isConnected = false;
 
     private String receivedCommand = "";
-
-    // Bluetooth commands
-    public final String MOVE_FORWARD = "Forward";
-    public final String MOVE_LEFT = "Left";
-    public final String MOVE_RIGHT = "Right";
-    public final String MOVE_BREAK = "Brake";
-    public final String MOVE_PLACE = "Place";
-    public final String COMAND_RESUME = "Resume";
-    public final String COMMAND_DISALLOWED = "Disallowed";
-    public final String COMMAND_SUCCEEDED = "Succeeded";
-    public final String OBJECT_SPOTTED = "Object";
-    public final String OBJECT_UNKNOWN = "Uncharted";
 
     /**
      * Constructor of the class Bluetooth that is responsible for receiving and transmitting data over
@@ -35,7 +23,7 @@ public class Bluetooth {
      *
      * @author Kerr
      */
-    public Bluetooth(MainView callback) {
+    public Bluetooth(ApplicationMain callback) {
         this.callback = callback;
     }
 

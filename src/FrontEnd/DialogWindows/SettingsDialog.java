@@ -2,7 +2,7 @@ package frontend.dialogwindows;
 
 import backend.Object;
 import backend.Obstruction;
-import frontend.MainView;
+import frontend.ApplicationMain;
 import javafx.event.ActionEvent;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -42,7 +42,7 @@ public class SettingsDialog {
      *
      * @author Kerr
      */
-    public SettingsDialog(MainView callback, int gridWidth, int gridHeight, int boebotX, int boebotY, int boebotVX, int boebotVY, int turnWeight, int forwardWeight) {
+    public SettingsDialog(ApplicationMain callback, int gridWidth, int gridHeight, int boebotX, int boebotY, int boebotVX, int boebotVY, int turnWeight, int forwardWeight) {
 
         // Set the default settings
         this.gridWidth = gridWidth;

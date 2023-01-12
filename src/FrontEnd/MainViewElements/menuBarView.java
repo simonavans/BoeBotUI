@@ -1,6 +1,6 @@
 package frontend.mainviewelements;
 
-import frontend.MainView;
+import frontend.ApplicationMain;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -20,7 +20,7 @@ public class menuBarView {
      * Generates a menubar with options fo manipulating objects and settings.
      * @param callback class to which the method should callback
      */
-    public menuBarView(MainView callback) {
+    public menuBarView(ApplicationMain callback) {
 
         // Create three submenu items for adding objects, editing objects and deleting objects.
         MenuItem menuAddObject = new MenuItem("Add Object");

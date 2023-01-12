@@ -1,6 +1,6 @@
 package frontend.dialogwindows;
 
-import frontend.MainView;
+import frontend.ApplicationMain;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.scene.control.*;
@@ -20,7 +20,7 @@ public class SetComPortDialog {
      *
      * @author Kerr
      */
-    public SetComPortDialog(MainView callback) {
+    public SetComPortDialog(ApplicationMain callback) {
 
         // Get the available COMPORTS
         String[] portNames = SerialPortList.getPortNames();

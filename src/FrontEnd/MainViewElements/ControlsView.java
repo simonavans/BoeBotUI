@@ -1,6 +1,6 @@
 package frontend.mainviewelements;
 
-import frontend.MainView;
+import frontend.ApplicationMain;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -18,7 +18,7 @@ public class ControlsView {
      *
      * @author Kerr
      */
-    public ControlsView(MainView callback) {
+    public ControlsView(ApplicationMain callback) {
         // Create two buttons for turning left and right
         Button buttonTurnLeft = new Button("Turn Left");
         Button buttonTurnRight = new Button("Turn right");
