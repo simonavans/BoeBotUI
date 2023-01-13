@@ -1,7 +1,7 @@
 package backend;
 
-import frontend.ApplicationMain;
 import javafx.application.Platform;
+import frontend.ApplicationMain;
 import jssc.*;
 
 /**
@@ -85,13 +85,19 @@ public class Bluetooth {
      * @author Kerr
      */
     public void transmitCommand(String command) {
-        // Permanent print statement to monitor bluetooth
-        System.out.println("[transmitCommand] " + command);
+//        // Permanent print statement to monitor bluetooth
+//        System.out.println("[transmitCommand] " + command);
+//
+//        try {
+//            serialPort.writeString(command);
+//        } catch (SerialPortException e) {
+//            e.printStackTrace();
+//        }
 
-        try {
-            serialPort.writeString(command);
-        } catch (SerialPortException e) {
-            e.printStackTrace();
+        if (command.equals("Application: Disallowed")) {
+            System.out.println("Though luck!");
+        } else {
+            callback.onBluetoothReceiveEvent("Boebot: Succeeded");
         }
     }
 

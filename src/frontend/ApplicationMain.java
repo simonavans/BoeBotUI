@@ -1,17 +1,19 @@
 package frontend;
 
-import backend.*;
+import backend.Bluetooth;
 import backend.Object;
+import backend.Obstruction;
 import backend.pathfinding.Grid;
 import backend.pathfinding.PathFinder;
-import callbacks.*;
-import frontend.mainviewelements.*;
-
+import callbacks.ObjectListCallback;
+import callbacks.ObstructionListCallback;
+import callbacks.SettingsCallback;
+import callbacks.bluetoothCallback;
 import frontend.dialogwindows.ObjectDialog;
 import frontend.dialogwindows.ObstructionDialog;
 import frontend.dialogwindows.SetComPortDialog;
 import frontend.dialogwindows.SettingsDialog;
-
+import frontend.mainviewelements.*;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -23,7 +25,10 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.TableView;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Text;
@@ -39,13 +44,13 @@ import java.util.Optional;
 
 
 //TODO must haves:
-// don't allow boebot to crash into objects when giving instructions
-// Deal with unknown object
+// don't allow boebot to crash into objects when giving instructions -> should be fixed, but test extensively
 
 //TODO mayor bugs:
-// When there are command in the queue, do not allow the user to add or edit anything (just disable all buttons)
-// If object is placed on destination of another object, turn it into an obstruction as well
-// What if an unknown object is spotted at an destination of another object?
+// When there are command in the queue, do not allow the user to add or edit anything (just disable all buttons) -> should be fixed
+// If object is placed on destination of another object, turn it into an obstruction as well -> should be fixed
+// Deal with unknown object -> should be fixed, but test extensively
+// What if an unknown object is spotted at an destination of another object? -> should be fixed, but test extensively
 
 //TODO minor bugs:
 // Sorting the TableView with more than 10 objects results in the order Object 1, object 10, object 11, object 2 etc.
@@ -271,24 +276,23 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
     }
 
     /**
-     * Method that sets the application in automatic mode
+     * Method that disables a few relevant options for the user
      *
      * @author Kerr
      */
-    private void enableAutomaticMode() {
-        inAutomaticMode = true;
-        objectListView.disableButtons();
-        menuBarView.disableMenus();
-        obstructionListView.disableButtons();
+    private  void disableMenuOption() {
+        gridView.resetLineSegments();
+        objectListView.enableButtons();
+        menuBarView.enableMenus();
+        obstructionListView.enableButtons();
     }
 
     /**
-     * Method that sets the application in manual mode
+     * Method that enables a few relevant options for the user
      *
      * @author Kerr
      */
-    private void disableAutomaticMode() {
-        inAutomaticMode = false;
+    private void enableMenuOption() {
         gridView.resetLineSegments();
         objectListView.enableButtons();
         menuBarView.enableMenus();
@@ -490,6 +494,27 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
         objectListView.getObjectTable().refresh();
     }
 
+
+    //TODO this method will strictly speaking not be used by the objectView and is a little out of place here
+
+    /**
+     * Helper method that converts an object into an obstruction. The location of the object becomes the obstruction
+     * location and the object destination is removed.
+     * @param object the object that should be converted to an obstruction
+     */
+    private void convertObject(Object object) {
+        if (object != null) {
+
+            gridView.deletePointOfInterest(object.getLocationX(), object.getLocationY());
+            gridView.deletePointOfInterest(object.getDestinationX(), object.getDestinationY());
+
+            objectListView.getObjectTable().getItems().remove(object);
+
+            addObstruction(object.getLocationX(), object.getLocationY());
+        }
+    }
+
+
     /**
      * Method that implements the logic for deleting an object from the ObjectList
      *
@@ -638,7 +663,9 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
         // If no issues are found
         else {
             // Disable (most) UI buttons
-            enableAutomaticMode();
+            inAutomaticMode = true;
+            disableMenuOption();
+
 
             // Reset the stepNumberString
             stepNumberString = 0;
@@ -920,7 +947,14 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
 
                     // If a next step exists perform the next step
                     if (!nextStep.equals("")) {
-                        onBluetoothTransmitEvent(nextStep);
+
+                        if (nextStep.equals("Resume")) {
+                            onStartRouteEvent();
+                        } else {
+                            onBluetoothTransmitEvent(nextStep);
+                        }
+                    } else {
+                        enableMenuOption();
                     }
 
                     // move the steps up one in the queue
@@ -943,11 +977,24 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
 
                 // Tell the boebot the obstruction is unknown
                 onBluetoothTransmitEvent("Uncharted");
-                disableAutomaticMode();
+                inAutomaticMode = false;
+                enableMenuOption();
 
-                // Mark the location of the obstruction and add it to the list of obstructions
+                // Clear all current commands
+                currentStep = "";
+                nextStep = ""; //TODO see if this works
+
+
+                // Mark the location of the obstruction
                 int obstructionX = settingsDialog.boebotX + settingsDialog.boebotVX;
                 int obstructionY = settingsDialog.boebotY + settingsDialog.boebotVY;
+
+
+                //If the place location equals the destination of another object, mark this object as an instruction
+                Object object = objectListView.getObjectFromDestination(obstructionX, obstructionY);
+                convertObject(object);
+
+                // add the obstruction to the list of obstructions
                 addObstruction(obstructionX, obstructionY);
 
                 // Display an error
@@ -959,7 +1006,8 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
                     onBluetoothTransmitEvent(command);
                 }
 
-                disableAutomaticMode();
+                inAutomaticMode = false;
+                enableMenuOption();
                 displayError("Emergency break engaged. The boebot can no longer continue. Please restart the application and place the boebot in its starting position.");
                 Platform.exit();
 
@@ -1083,6 +1131,10 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
         int locationX = settingsDialog.boebotX;
         int locationY = settingsDialog.boebotY;
 
+        //If the place location equals the destination of another object, mark this object as an instruction
+        Object object = objectListView.getObjectFromDestination(locationX, locationY);
+        convertObject(object);
+
         // Remove the object from the object list
         objectListView.getObjectTable().getItems().remove(holding);
         gridView.deletePointOfInterest(holding.getDestinationX(), holding.getDestinationY());
@@ -1120,7 +1172,7 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
     private boolean validateCommand(String command) {
         // If the robot is in automatic mode, add the command to the queue and disable automatic mode
         if (inAutomaticMode) {
-            disableAutomaticMode();
+            inAutomaticMode = false;
             nextStep = command;
         } else {
             // If there is no command in the queue, make the command the current step and send it over bluetooth
@@ -1138,7 +1190,6 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
         return false;
     }
 
-    // TODO the validation of the resume command should just be that the boebot must not be in automatic mode and the queue should not be full, else add it to the first or second position in the queue
 
     /**
      * Method that validates if resuming a route is legal.
@@ -1147,7 +1198,12 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
      * @author Kerr
      */
     private boolean validateResume() {
-//        onBluetoothTransmitEvent("Disallowed");
+
+        // If the robot is not in automatic mode, the command is valid
+        if (inAutomaticMode) {
+            onBluetoothTransmitEvent("Disallowed");
+            return false;
+        }
         return true;
     }
 
@@ -1159,8 +1215,39 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
      *
      * @author Kerr
      */
-    private boolean validateForward() {
-//        onBluetoothTransmitEvent("Disallowed");
+    private boolean validateForward() { //TODO test if this works
+
+        int[] parameters = calculateNextParameters();
+
+        int nextX = parameters[0];
+        int nextY = parameters[1];
+        int nextVX = parameters[2];
+        int nextVY = parameters[3];
+
+        // Validate if the robot does not exit the grid after performing the contested command
+        if (nextX + nextVX >= settingsDialog.gridWidth || nextY + nextVY >= settingsDialog.gridHeight) {
+            onBluetoothTransmitEvent("Disallowed");
+            return false;
+        }
+
+        if (nextX + nextVX < 0 || nextY + nextVY < 0) {
+            onBluetoothTransmitEvent("Disallowed");
+            return false;
+        }
+
+        // Validate if the robot does not crash into another object after performing the contested command
+        Object object = objectListView.getObjectFromLocation(nextX - nextVX, nextY - nextVY);
+        if (object != null && !holding.equals(object)) {
+            onBluetoothTransmitEvent("Disallowed");
+            return false;
+        }
+
+        // Validate if the robot does not crash into an obstruction after performing the contested command
+        if (obstructionListView.getObstructionFromLocation(nextX + nextVX, nextY + nextVY) != null) {
+            onBluetoothTransmitEvent("Disallowed");
+            return false;
+        }
+
         return  true;
     }
 
@@ -1172,9 +1259,87 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
      *
      * @author Kerr
      */
-    private boolean validatePlace() {
-//        onBluetoothTransmitEvent("Disallowed");
-        return true;
+    private boolean validatePlace() { //TODO test if this works
+
+        int[] parameters = calculateNextParameters();
+
+        int nextX = parameters[0];
+        int nextY = parameters[1];
+        int nextVX = parameters[2];
+        int nextVY = parameters[3];
+
+        // Validate if the robot does not exit the grid after performing the contested command
+        if (nextX - nextVX >= settingsDialog.gridWidth || nextY - nextVY >= settingsDialog.gridHeight) {
+            onBluetoothTransmitEvent("Disallowed");
+            return false;
+        }
+
+        if (nextX - nextVX < 0 || nextY - nextVY < 0) {
+            onBluetoothTransmitEvent("Disallowed");
+            return false;
+        }
+
+        // Validate if the robot does not crash into another object after performing the contested command
+        Object object = objectListView.getObjectFromLocation(nextX - nextVX, nextY - nextVY);
+        if (object != null && !holding.equals(object)) {
+            onBluetoothTransmitEvent("Disallowed");
+            return false;
+        }
+
+        // Validate if the robot does not crash into an obstruction after performing the contested command
+        if (obstructionListView.getObstructionFromLocation(nextX - nextVX, nextY - nextVY) != null) {
+            onBluetoothTransmitEvent("Disallowed");
+            return false;
+        }
+
+
+        // Validate if the robot is holding an object
+        if (holding == null) {
+            onBluetoothTransmitEvent("Disallowed");
+            return false;
+        }
+
+        return  true;
+    }
+
+    /**
+     * Helper method that returns the robot location (X and Y) and orientation (VX and VY) when performing all commands
+     * in the queue. If the queue is empty, this method returns the current location and orientation of the robot.
+     * @return an Array with the location and orientation of the robot in the format {X, Y, VX, VY}
+     *
+     * @author Kerr
+     */
+    private int[] calculateNextParameters() {
+        int nextX = settingsDialog.boebotX;
+        int nextY = settingsDialog.boebotY;
+        int nextVX = settingsDialog.boebotVX;
+        int nextVY = settingsDialog.boebotVY;
+
+        // If the step will be executed after another step, calculate the location and orientation of the robot after that step
+        if (!currentStep.equals("")) {
+            switch (currentStep) {
+                case "Forward":
+                    nextX += nextVX;
+                    nextY += nextVY;
+                    break;
+                case "Left":
+                    int helperVX1 = nextVX;
+                    nextVX = -nextVY;
+                    nextVY = helperVX1;
+                    break;
+                case "Right":
+                    int helperVX2 = nextVX;
+                    nextVX = nextVY;
+                    nextVY = -helperVX2;
+                    break;
+                case "Place":
+                    nextX -= nextVX;
+                    nextY -= nextVY;
+                    break;
+            }
+        }
+
+        return new int[] {nextX, nextY, nextVX, nextVY};
     }
 
 
@@ -1253,8 +1418,11 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
                     } else {
                         // Else clear the GridView and enable menu items again
                         currentStep = "";
-                        disableAutomaticMode();
+                        inAutomaticMode = false;
 
+                        if (nextStep.equals("")) { //TODO check if this works
+                            enableMenuOption();
+                        }
                     }
             }
             stepNumberString++;
@@ -1280,12 +1448,11 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
             // If the current step is to pick an object up, skip this step (this step is only used internally and not
             // by the boebot itself)
             if (currentStep.equals("Pickup")) {
-                onBluetoothTransmitEvent(routeToString.get(stepNumberString + 1));
                 currentStep = routeToString.get(stepNumberString + 1);
                 nextStep = routeToString.get(stepNumberString + 2);
-            } else {
-                onBluetoothTransmitEvent(currentStep);
             }
+
+            onBluetoothTransmitEvent(currentStep);
         }
     }
 }
