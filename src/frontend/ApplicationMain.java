@@ -1136,7 +1136,9 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
 
         //If the place location equals the destination of another object, mark this object as an instruction
         Object object = objectListView.getObjectFromDestination(locationX, locationY);
-        convertObject(object);
+        if (object != null && !object.equals(holding)) {
+            convertObject(object);
+        }
 
         // Remove the object from the object list
         objectListView.getObjectTable().getItems().remove(holding);
