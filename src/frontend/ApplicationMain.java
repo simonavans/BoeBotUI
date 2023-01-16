@@ -981,7 +981,7 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
                 enableMenuOption();
 
                 // Clear all current commands
-                currentStep = "";
+                currentStep = ""; //TODO this should probably be a step
                 nextStep = ""; //TODO see if this works
 
 
@@ -999,7 +999,7 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
 
                 // Display an error
                 displayError("An unknown obstruction was found at (" + obstructionX + ", " + obstructionY + "), the boebot has stopped.\nPlease press RESUME on the remote, or 'Start Route' in the application to continue.");
-
+              break;
             case "Brake":
 
                 if (!source.equals("Remote")) {
@@ -1081,6 +1081,7 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
         int boebotVX = settingsDialog.boebotVX;
         settingsDialog.boebotVX = settingsDialog.boebotVY;
         settingsDialog.boebotVY = -boebotVX;
+        pathfinder.updateStartOrientation();
     }
 
     /**
@@ -1093,6 +1094,7 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
         int boebotVX = settingsDialog.boebotVX;
         settingsDialog.boebotVX = -settingsDialog.boebotVY;
         settingsDialog.boebotVY = boebotVX;
+        pathfinder.updateStartOrientation();
     }
 
     /**
@@ -1117,8 +1119,9 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
         gridView.markBoeBotLocation(locationX + settingsDialog.boebotVX, locationY + settingsDialog.boebotVY);
 
         // Change the location of the boebot in the settings
-        getSettingsDialog().boebotX = locationX + settingsDialog.boebotVX;
-        getSettingsDialog().boebotY = locationY + settingsDialog.boebotVY;
+        settingsDialog.boebotX = locationX + settingsDialog.boebotVX;
+        settingsDialog.boebotY = locationY + settingsDialog.boebotVY;
+        pathfinder.updateStartLocation();
     }
 
     /**
@@ -1147,8 +1150,9 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
         gridView.markBoeBotLocation(locationX - settingsDialog.boebotVX, locationY - settingsDialog.boebotVY);
 
         // Change the location of the boebot in the settings
-        getSettingsDialog().boebotX = locationX - settingsDialog.boebotVX;
-        getSettingsDialog().boebotY = locationY - settingsDialog.boebotVY;
+        settingsDialog.boebotX = locationX - settingsDialog.boebotVX;
+        settingsDialog.boebotY = locationY - settingsDialog.boebotVY;
+        pathfinder.updateStartLocation();
 
         // Update the status label
         holdingUpdate.setText("The boebot is currently not holding an object");
