@@ -1141,8 +1141,8 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
         }
 
         // Remove the object from the object list
-        objectListView.getObjectTable().getItems().remove(holding);
         gridView.deletePointOfInterest(holding.getDestinationX(), holding.getDestinationY());
+        objectListView.getObjectTable().getItems().remove(holding);
         holding = null;
 
         /// Add the object to the obstruction list
