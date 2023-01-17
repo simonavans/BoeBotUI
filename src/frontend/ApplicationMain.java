@@ -40,25 +40,15 @@ import java.util.Optional;
 
 //================================================================================
 // MUST FIX
-//================================================================================
-
-
-//TODO must haves:
-// don't allow boebot to crash into objects when giving instructions -> should be fixed, but test extensively
+//===============================================================================
 
 //TODO mayor bugs:
-// When there are command in the queue, do not allow the user to add or edit anything (just disable all buttons) -> should be fixed
-// If object is placed on destination of another object, turn it into an obstruction as well -> should be fixed
-// Deal with unknown object -> should be fixed, but test extensively
+// When there are command in the queue, do not allow the user to add or edit anything (just disable all buttons)
+// Deal with unknown object
 // What if an unknown object is spotted at an destination of another object? -> should be fixed, but test extensively
 
 //TODO minor bugs:
-// Sorting the TableView with more than 10 objects results in the order Object 1, object 10, object 11, object 2 etc.
-// Fix close request on splash screen
 // Fix error on remote: Brake command
-
-//TODO minor improvements
-// unify bluetooth commands;
 
 public class ApplicationMain extends Application implements SettingsCallback, ObjectListCallback, ObstructionListCallback, bluetoothCallback {
 
@@ -282,9 +272,9 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
      */
     private  void disableMenuOption() {
         gridView.resetLineSegments();
-        objectListView.enableButtons();
-        menuBarView.enableMenus();
-        obstructionListView.enableButtons();
+        objectListView.disableButtons();
+        menuBarView.disableMenus();
+        obstructionListView.disableButtons();
     }
 
     /**
@@ -494,9 +484,6 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
         objectListView.getObjectTable().refresh();
     }
 
-
-    //TODO this method will strictly speaking not be used by the objectView and is a little out of place here
-
     /**
      * Helper method that converts an object into an obstruction. The location of the object becomes the obstruction
      * location and the object destination is removed.
@@ -513,7 +500,6 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
             addObstruction(object.getLocationX(), object.getLocationY());
         }
     }
-
 
     /**
      * Method that implements the logic for deleting an object from the ObjectList
@@ -1221,7 +1207,7 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
      *
      * @author Kerr
      */
-    private boolean validateForward() { //TODO test if this works
+    private boolean validateForward() {
 
         int[] parameters = calculateNextParameters();
 
@@ -1265,7 +1251,7 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
      *
      * @author Kerr
      */
-    private boolean validatePlace() { //TODO test if this works
+    private boolean validatePlace() {
 
         int[] parameters = calculateNextParameters();
 
@@ -1426,7 +1412,7 @@ public class ApplicationMain extends Application implements SettingsCallback, Ob
                         currentStep = "";
                         inAutomaticMode = false;
 
-                        if (nextStep.equals("")) { //TODO check if this works
+                        if (nextStep.equals("")) {
                             enableMenuOption();
                         }
                     }
