@@ -68,7 +68,7 @@ public class ObstructionDialog {
         destinationYSpinner.setDisable(true);
 
         // Add a checkbox that allows a obstruction to be converted to an obstruction
-        CheckBox convertObstructionCheckbox = new CheckBox("Convert to obstruction");
+        CheckBox convertObstructionCheckbox = new CheckBox("Convert to object");
 
         // Create a new GridPane and add all the previously created labels and spinners to it.
         this.mainEditLayout = new GridPane();
