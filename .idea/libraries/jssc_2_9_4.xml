@@ -1,7 +1,7 @@
 <component name="libraryTable">
-  <library name="jssc-2.8.0">
+  <library name="jssc-2.9.4">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/jssc-2.8.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jssc-2.9.4.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

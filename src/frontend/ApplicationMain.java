@@ -8,7 +8,7 @@ import backend.pathfinding.PathFinder;
 import callbacks.ObjectListCallback;
 import callbacks.ObstructionListCallback;
 import callbacks.SettingsCallback;
-import callbacks.bluetoothCallback;
+import callbacks.BluetoothCallback;
 import frontend.dialogwindows.ObjectDialog;
 import frontend.dialogwindows.ObstructionDialog;
 import frontend.dialogwindows.SetComPortDialog;
@@ -50,7 +50,7 @@ import java.util.Optional;
 //TODO minor bugs:
 // Fix error on remote: Brake command
 
-public class ApplicationMain extends Application implements SettingsCallback, ObjectListCallback, ObstructionListCallback, bluetoothCallback {
+public class ApplicationMain extends Application implements SettingsCallback, ObjectListCallback, ObstructionListCallback, BluetoothCallback {
 
     // Create the settings instance
     private SettingsDialog settingsDialog = new SettingsDialog(this,8, 8, 0, 0, 1, 0, 40, 20);

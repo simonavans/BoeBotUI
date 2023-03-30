@@ -1,6 +1,6 @@
 package callbacks;
 
-public interface bluetoothCallback {
+public interface BluetoothCallback {
     void onBluetoothTransmitEvent(String command);
     void onBluetoothReceiveEvent(String command);
 }
