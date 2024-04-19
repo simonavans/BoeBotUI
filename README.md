@@ -2,6 +2,4 @@ User interface for communicating with a 'BoeBot', an autonomously guidable vehic
 
 Using a shortest path algorithm, it can navigate the BoeBot correctly over a grid-like surface. A user can input coordinates to the UI where obstacles or grabbable objects may be located. The robot can put any grabbable object down on a desired location. The user interface will show a live graphical view of the BoeBot's state and location.
 
-![Screenshot of the user interface](ui_screenshot.png)
-
 [Showcase video on YouTube](https://youtu.be/sjxsNrNZvPM)
